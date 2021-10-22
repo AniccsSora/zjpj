@@ -1,0 +1,26 @@
+<annotation>
+	<folder>paper_qr</folder>
+	<filename>File 062.bmp</filename>
+	<path>D:\Git\zjpj\data\paper_qr\File 062.bmp</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>752</width>
+		<height>480</height>
+		<depth>1</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>bad-qr-code</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>165</xmin>
+			<ymin>75</ymin>
+			<xmax>453</xmax>
+			<ymax>361</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,5 @@
+train: D:\\git-repo\\ZhangJiaPJ\\log_XD\\20210504_1738\\train
+val: D:\\git-repo\\ZhangJiaPJ\\log_XD\\20210504_1738\\valid
+
+nc: 1
+names: ['QRCode']

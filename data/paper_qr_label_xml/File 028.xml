@@ -1,0 +1,26 @@
+<annotation>
+	<folder>paper_qr</folder>
+	<filename>File 028.bmp</filename>
+	<path>D:\Git\zjpj\data\paper_qr\File 028.bmp</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>752</width>
+		<height>480</height>
+		<depth>1</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>qr-code</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>326</xmin>
+			<ymin>105</ymin>
+			<xmax>651</xmax>
+			<ymax>423</ymax>
+		</bndbox>
+	</object>
+</annotation>

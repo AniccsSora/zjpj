@@ -1,0 +1,5 @@
+約 63 行 的 open() => with open(opt.data) as f:
+附上 encoding="utf-8"
+
+
+trina-k: 8132a403f87cc3b0dc909b9825b187b 剩下去看line。
