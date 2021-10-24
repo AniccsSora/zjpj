@@ -80,9 +80,7 @@ def get_square_region(src, xy: tuple, size):
 
 
 if __name__ == "__main__":
-
-
-    # 這張圖平率是 10
+   # 這張圖平率是 10
     img = cv2.imread('./data/bin-qrcode.png', cv2.COLOR_BGR2GRAY)
 
     size = 32
