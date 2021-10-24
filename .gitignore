@@ -6,7 +6,7 @@ __pycache__/
 *$py.class
 /log*
 .ipynb_checkpoints/*
-
+misc/.ipynb_checkpoints/*
 !data/raw_qr/*
 !data/break_qr/*
 
