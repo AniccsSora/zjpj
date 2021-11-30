@@ -21,8 +21,10 @@ class QRCodeDataset(Dataset):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
-        image = cv2.imread(self.img_paths[idx], cv2.COLOR_BGR2GRAY)
-        return self.img_labels[idx], image
+        image_path = self.img_paths[idx]
+        image_name = image_path.replace('\\', '/').split('/')[-1].split('.')[0]
+        image = cv2.imread(image_path, cv2.COLOR_BGR2GRAY)
+        return self.img_labels[idx], image, image_name
 
     def read_yolo_labels(self):
         # """ 根據 annotations_dir 內的資料 load labels資料 """

@@ -63,7 +63,7 @@ def get_32x32_boxes(img, c_and_bboxes, overlap=0.5):
     """
 
     @param img: ndarray
-    @param c_and_bboxes: [yolo_box_format, ...]
+    @param c_and_bboxes: [yolo_box_format, ...]， 'c' mean box.
     @param overlap: 0 < overlap <= 1
     @return boxes_32x32: [ bbox ...]
     """
@@ -86,8 +86,6 @@ def get_32x32_boxes(img, c_and_bboxes, overlap=0.5):
         _cc = 0.6 * 32  # 優化常數
         _x, _y = x1, y1  # left top in qr-coder region
         for yt in range(round((height*h-_cc)/jump)):
-            boxes_32x32.append((int(_x), int(_y), int(_x+32), int(_y+32)))
-
             for xt in range(round((width*w-_cc)/jump)):
                 boxes_32x32.append((int(_x), int(_y), int(_x+32), int(_y+32)))
                 _x += jump
@@ -102,6 +100,10 @@ def get_32x32_boxes(img, c_and_bboxes, overlap=0.5):
 
 
 if __name__ == "__main__":
+    """ 將 QRCode 切成 32 x 32，這邊特別處理 bbox 內部的 QRCode 
+        因為當 QRCode 傾斜 45度時會造成 四邊的 patch 框的不屬於 QRCode """
+    # annotations_dir: 都是 txt(yolo註記法)
+    # img_dir:圖片，與annotations_dir註記檔案名稱同名ㄟㄟㄟㄟㄟ。
     qr_code_dataset = QRCodeDataset(annotations_dir="./data/paper_qr_label_yolo",
                                     img_dir="./data/paper_qr",
                                     predefined_class_file="./data/predefined_classes.txt")
@@ -111,9 +113,15 @@ if __name__ == "__main__":
 
     __VISUAL_DEMO__ = False
 
-    for data in qr_code_dataset:
-        c_and_bboxes = data[0]
-        image = data[1]
+    # range() 內第一個參數可控制從第幾張圖片開始。
+    for data_idx in range(7, len(qr_code_dataset)):
+        data = qr_code_dataset[data_idx]
+        c_and_bboxes = data[0]  # class and bounding box
+        image = data[1]  # 圖片本身
+        image_name = data[2]
+
+        sub_savedir = pjoin(qr_code_patches_save_dir, image_name)
+        os.makedirs(sub_savedir)
 
         box_number, lined_image = draw_box_on_image(np.array(image), colors=(0, 0, 255), c_and_bboxes=c_and_bboxes)
 
@@ -121,7 +129,7 @@ if __name__ == "__main__":
         if __VISUAL_DEMO__:
             cv2.imshow(f"[Demo] box_number = {box_number}", lined_image)
 
-        boxes_32x32 = get_32x32_boxes(image, c_and_bboxes, overlap=0.3)
+        boxes_32x32 = get_32x32_boxes(image, c_and_bboxes, overlap=1)
 
         lb_image = np.array(image)
         if image.ndim == 2:
@@ -140,17 +148,37 @@ if __name__ == "__main__":
             cnv = cv2.cvtColor(cnv, cv2.COLOR_GRAY2BGR)
 
         _tmp = np.array(cnv)
+
+        # 默認此次 bbox 框的都是 full qrcode (滿滿的 qrcode)
+        jump_FLAG = False
+
+        # bbox的放大率，預設為 1.0
+        bbox_zoom = 1.0
+
         for idx, mini_box in enumerate(boxes_32x32):
-            lft, rbm = mini_box[0:2], mini_box[2:]  # left top, right bottom
+            if bbox_zoom == 1.0:
+                lft, rbm = mini_box[0:2], mini_box[2:]  # left top, right bottom
+            else:
+                lft, rbm = mini_box[0:2], mini_box[2:]
+                rbm = (int(mini_box[2:][0]+(32*bbox_zoom-32)), int(mini_box[2:][1]+(32*bbox_zoom-32)))
             cv2.rectangle(_tmp, lft, rbm, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.imshow(f"({idx+1}/{len(boxes_32x32)}) O or X ", _tmp)
+            if not jump_FLAG:
+                cv2.imshow(f"({idx+1}/{len(boxes_32x32)}) O or X ", _tmp)
+                print(lft, rbm)
 
             while True:
-                k = cv2.waitKey(0) & 0xFF
-                if k == ord('o') or k == ord('O'):
+                if not jump_FLAG:
+                    k = cv2.waitKey(0) & 0xFF
+                if (k == ord('o') or k == ord('O')) or jump_FLAG:
                     print(f"{idx+1} 按下了 o")
-                    simg = image[lft[1]:rbm[1], lft[0]:rbm[0]]
-                    sname = pjoin(qr_code_patches_save_dir, f"{save_name_cnt}.bmp")
+                    if bbox_zoom == 1.0:
+                        simg = image[lft[1]:rbm[1], lft[0]:rbm[0]]
+                    else:
+                        base_size = 32
+                        _add_range = int(base_size * bbox_zoom - base_size)
+                        assert _add_range > 0
+                        simg = image[lft[1]:rbm[1]+_add_range, lft[0]:rbm[0]+_add_range]
+                    sname = pjoin(sub_savedir, f"{save_name_cnt}.bmp")
                     cv2.imwrite(sname, simg)
                     cv2.destroyAllWindows()
                     save_name_cnt += 1
@@ -159,10 +187,23 @@ if __name__ == "__main__":
                     print(f"{idx+1} 按下了 x")
                     cv2.destroyAllWindows()
                     break
+                # 跳過這這張圖片，並默認全部都是 qrcode
+                elif k == ord('a') or k == ord('A'):
+                    print(f"{idx + 1} 按下了 A")
+                    print("默認全部均是 qrcode patch")
+                    jump_FLAG = True
+                elif k == ord('r') or k == ord('R'):
+                    print(f"{idx + 1} 按下了 r")
+                    print("重新採樣 這張的 resolution")
+                    new_bbox_zoom = float(input("框框要變大幾倍?:"))
+                    print(f"bbox 放大率從 {bbox_zoom} --> {new_bbox_zoom}")
+                    bbox_zoom = new_bbox_zoom
+                    continue
                 else:
                     continue
 
             # reset 畫布
             _tmp = np.array(cnv)
-        # 屬於 qr code 的給我先拿出來 丟到一個資料夾下
+        # end of one image.
+
 
