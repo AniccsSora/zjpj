@@ -1,0 +1,1 @@
+Q1: 背景的 patch 遠大於 qrcode-patch 數量。這樣練起來OK嗎?
