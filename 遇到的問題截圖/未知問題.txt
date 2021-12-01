@@ -1,0 +1,2 @@
+# Qrcode patch 定義區塊應該要包含更多 moudle，而不是只看到 2塊黑色 moudle 就判定為 qrcode。
+# 建議 只少 16個 module 再定義為 qrcode
