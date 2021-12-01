@@ -12,6 +12,14 @@ predefined_class = ['qr-code', "bad-qr-code"]
 
 
 def plot_one_box(x, image, color=None, label=None, line_thickness=None):
+    """
+    @param x: [x1, y1, x2, y2]。
+    @param image: ndarray, 畫上去的目標。
+    @param color: tuple, (R, G, B)。
+    @param label: bbox 要寫上去的名稱。
+    @param line_thickness: bbox 框線粗度。
+    @return: 一張附有 bbox 的 ndarray。
+    """
     if image.ndim == 2:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     # Plots one bounding box on image img
