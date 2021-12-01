@@ -4,7 +4,7 @@ from os.path import join as pjoin
 import numpy as np
 from little_function import bbox_isOverlap, cutting_cube, analysis_yolo_row_data
 import cv2
-
+from tqdm import tqdm
 
 if __name__ == "__main__":
     """
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     background_patch_saveDir = "./data/background_patch"
 
     # range 可以控制從哪一張圖片開始跑
-    for image_idx in range(2, len(qr_code_dataset)):
+    for image_idx in tqdm(range(0, len(qr_code_dataset))):
         image_data = qr_code_dataset[image_idx]
         cname_and_bboxes, image, fname = image_data
         # print(cname_and_bboxes, fname)
@@ -34,9 +34,18 @@ if __name__ == "__main__":
         for cube in cube_gen:
             for qr_bbox in qr_bboxes:
                 if bbox_isOverlap(qr_bbox, cube):
-                    pass
-                else:
-                    background_patches.append(cube)
+                    break
+            else:
+                background_patches.append(cube)
+
+
+        # 視覺化 背景框框
+        # for bk in background_patches:
+        #     lft, rbm = bk[0:2], bk[2:4]
+        #     cv2.rectangle(image, lft, rbm, (255, 0, 0), 2)
+        # cv2.imshow("hi", image)
+        # cv2.waitKey(0)
+        # continue
 
         save_path = pjoin(background_patch_saveDir, fname)
         os.makedirs(save_path)
@@ -46,10 +55,4 @@ if __name__ == "__main__":
             x1, y1, x2, y2 = background_patch
             bg_patch = image[y1:y2, x1:x2]
             cv2.imwrite(pjoin(save_path, f"{bg_idx+1}.bmp"), bg_patch)  # 檢查 channel.
-        # 視覺化 背景框框
-        # for bk in background_patches:
-        #     lft, rbm = bk[0:2], bk[2:4]
-        #     cv2.rectangle(image,lft, rbm, (255, 0, 0), 2)
-        # cv2.imshow("hi", image)
-        # cv2.waitKey(0)
 
