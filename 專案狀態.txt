@@ -1,0 +1,3 @@
+測試 patches_dataset 是否正確取值
+
+next: 建立 model 並測試
