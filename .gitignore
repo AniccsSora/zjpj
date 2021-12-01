@@ -1,3 +1,4 @@
+!data/background_patch/*.bmp
 *.png
 *.jpg
 .idea/
@@ -9,6 +10,6 @@ __pycache__/
 misc/.ipynb_checkpoints/*
 !data/raw_qr/*
 !data/break_qr/*
-!data/background_patch/*
+
 
 

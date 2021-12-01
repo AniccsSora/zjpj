@@ -1,25 +1,37 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using {device} device')
 
-class CNN(nn.Module):
-    def __init__(self):
-        super(CNN, self).__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(28*28, 512),
-            nn.ReLU(),
-            nn.Linear(512, 512),
-            nn.ReLU(),
-            nn.Linear(512, 10),
-        )
+
+
+class QRCode_CNN(nn.Module):
+    def __init__(self, act_func=F.relu):
+        super(QRCode_CNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)  #
+        self.conv2 = nn.Conv2d(6, 12, 5)
+        # fc1: 5*5 是要根據前剛的網路計算出來的
+        # fc1: 根據論文是使用 300 個 neurons.
+        self.fc1 = nn.Linear(12 * 5 * 5, 300)
+        # fc1: 根據論文是使用 2 個 neurons，直接皆輸出.
+        self.fc2 = nn.Linear(120, 2)
+        self.act = act_func
 
     def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        x = self.act(self.conv1(x))
+        x = self.pool(x)
+        x = self.act(self.conv2(x))
+        x = self.pool(x)
+        x = nn.Flatten(x)
+        x = self.act(self.fc1(x))
+        x = self.act(self.fc2(x))
+        # !!! pytorch 做分類問題時不用自己套 softmax，
+        # 他會在 nn.CrossEntropyLoss 預設套用 LogSoftmax+NLLLoss。
+        #
+        return x
 
 
 if __name__ == "__main__":
