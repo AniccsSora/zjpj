@@ -8,8 +8,10 @@ print(f'Using {device} device')
 
 
 class QRCode_CNN(nn.Module):
-    def __init__(self, act_func=F.relu):
+    def __init__(self, act_func=F.relu, drop=0.0):
         super(QRCode_CNN, self).__init__()
+        self.drop = drop
+        self.drop_layer = nn.Dropout2d(p=self.drop)
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5)
         self.pool = nn.MaxPool2d(2, 2)  #
         self.conv2 = nn.Conv2d(in_channels=6, out_channels=12, kernel_size=5)
@@ -21,13 +23,14 @@ class QRCode_CNN(nn.Module):
         self.act = act_func
 
     def forward(self, x):
+        x = x.view((-1, 1, 32, 32))
         x = self.act(self.conv1(x))
-        x = self.pool(x)
+        x = self.drop_layer(self.pool(x))
         x = self.act(self.conv2(x))
-        x = self.pool(x)
+        x = self.drop_layer(self.pool(x))
         x = torch.flatten(x, start_dim=1)
         x = self.act(self.fc1(x))
-        x = self.act(self.fc2(x))
+        x = self.fc2(x)
         # !!! pytorch 做分類問題時不用自己套 softmax，
         # 他會在 nn.CrossEntropyLoss 預設套用 LogSoftmax+NLLLoss。
         #

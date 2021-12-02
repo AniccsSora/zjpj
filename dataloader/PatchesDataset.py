@@ -25,7 +25,9 @@ class PatchesDataset(Dataset):
             self.background_patch_path_list = []
         self.device = device
         self.data = self.qr_patch_path_list + self.background_patch_path_list
-        self.weight = (len(self.qr_patch_path_list)/len(self.data), len(self.background_patch_path_list)/len(self.data))
+        qr_ratio = len(self.qr_patch_path_list) / len(self.data)
+        bg_ratio = len(self.background_patch_path_list) / len(self.data)
+        self.weight = {'background': bg_ratio, 'QRCode': qr_ratio}
 
     def __len__(self):
         return len(self.data)
@@ -37,7 +39,7 @@ class PatchesDataset(Dataset):
         image = cv2.imread(self.data[idx], cv2.IMREAD_GRAYSCALE)
         label = 1 if is_qrcode else 0
 
-        image = image/255
+        image = image/255.0
         res_tensor = torch.tensor(image, device=self.device, dtype=torch.float32)
 
         assert len(res_tensor.shape) == 2
@@ -45,7 +47,8 @@ class PatchesDataset(Dataset):
             res_tensor = self.resize_32_32(res_tensor)
         assert res_tensor.shape == (32, 32)
 
-        return torch.unsqueeze(res_tensor, 0), label
+        # return torch.unsqueeze(res_tensor, 0), label
+        return res_tensor, label
 
     def resize_32_32(self, data):
         res = None
