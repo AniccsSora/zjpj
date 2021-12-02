@@ -13,11 +13,17 @@ class PatchesDataset(Dataset):
     32x32 patches
     """
     def __init__(self, qrcode_patches_dir, background_patches_dir, device):
-        assert os.path.isdir(qrcode_patches_dir)  # 請確認 qrcode patch 資料夾存在
-        assert os.path.isdir(background_patches_dir)  # 請確認 background patches 資料夾存在
+        if qrcode_patches_dir is not None:
+            assert os.path.isdir(qrcode_patches_dir)  # 請確認 qrcode patch 資料夾存在
+            self.qr_patch_path_list = glob.glob(pjoin(qrcode_patches_dir, '*/*.*'), recursive=True)
+        else:
+            self.qr_patch_path_list = []
+        if background_patches_dir is not None:
+            assert os.path.isdir(background_patches_dir)  # 請確認 background patches 資料夾存在
+            self.background_patch_path_list = glob.glob(pjoin(background_patches_dir, '*/*.*'), recursive=True)
+        else:
+            self.background_patch_path_list = []
         self.device = device
-        self.qr_patch_path_list = glob.glob(pjoin(qrcode_patches_dir, '*/*.*'), recursive=True)
-        self.background_patch_path_list = glob.glob(pjoin(background_patches_dir, '*/*.*'), recursive=True)
         self.data = self.qr_patch_path_list + self.background_patch_path_list
         self.weight = (len(self.qr_patch_path_list)/len(self.data), len(self.background_patch_path_list)/len(self.data))
 
@@ -35,8 +41,21 @@ class PatchesDataset(Dataset):
         res_tensor = torch.tensor(image, device=self.device, dtype=torch.float32)
 
         assert len(res_tensor.shape) == 2
+        if res_tensor.shape != (32, 32):
+            res_tensor = self.resize_32_32(res_tensor)
+        assert res_tensor.shape == (32, 32)
+
         return torch.unsqueeze(res_tensor, 0), label
 
+    def resize_32_32(self, data):
+        res = None
+        data = data.detach().cpu().numpy()
+        if data.shape != (32, 32):
+            res = cv2.resize(data, dsize=(32, 32))
+        else:
+            res = data
+
+        return torch.tensor(res).to(self.device)
 if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     patches_dataset = PatchesDataset(qrcode_patches_dir='../data/pathes_of_qrcode_32x32',
