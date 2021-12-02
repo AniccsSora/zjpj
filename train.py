@@ -21,7 +21,7 @@ def train(dataloader, net, lr, epochs, weight=None, class_name=['background', 'Q
         avg_loss_in_a_epoch, cnt = 0, 0
         for data in dataloader:
             train_images, train_labels = data
-            train_images = torch.unsqueeze(train_images, 1)
+            #train_images = torch.unsqueeze(train_images, 1)
             optimizer.zero_grad()
             y_pred = net(train_images)
             loss = criterion(y_pred.to(device), train_labels.to(device))
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     net = QRCode_CNN(drop=0.1)
 
-    net = train(train_dataloader, net, lr=1e-3, epochs=10, weight=patches_dataset.weight)
+    net = train(train_dataloader, net, lr=1e-3, epochs=2, weight=patches_dataset.weight)
     torch.save(net.state_dict(), './trained.pt')
     val_background_dir="./data/val_patch_False"
     val_qrcode_dir = "./data/val_patch_True"
@@ -74,6 +74,7 @@ if __name__ == "__main__":
     val_same_bg_dataloader = DataLoader(val_same_bk_dataset, batch_size=10)
 
     with torch.no_grad():
+        class_name = ['background', 'QRCode']
         #
         print("test qr code -------")
         for data in val_qr_dataloader:
@@ -81,6 +82,8 @@ if __name__ == "__main__":
             # images = torch.unsqueeze(images, dim=0)
             out_data = net(images)
             print(out_data)
+            _, max_idx = torch.max(out_data.detach().cpu(), dim=1)
+            print("class:", [class_name[idx] for idx in max_idx])
             break
 
         print("test background -------")
@@ -89,6 +92,8 @@ if __name__ == "__main__":
             # images = torch.unsqueeze(images, dim=0)
             out_data = net(images)
             print(out_data)
+            _, max_idx = torch.max(out_data.detach().cpu(), dim=1)
+            print("class:", [class_name[idx] for idx in max_idx])
             break
 
 
@@ -98,6 +103,8 @@ if __name__ == "__main__":
             # images = torch.unsqueeze(images, dim=0)
             out_data = net(images)
             print(out_data)
+            _, max_idx = torch.max(out_data.detach().cpu(), dim=1)
+            print("class:", [class_name[idx] for idx in max_idx])
             break
 
         print("test same bg ----")
@@ -106,5 +113,7 @@ if __name__ == "__main__":
             # images = torch.unsqueeze(images, dim=0)
             out_data = net(images)
             print(out_data)
+            _, max_idx = torch.max(out_data.detach().cpu(), dim=1)
+            print("class:", [class_name[idx] for idx in max_idx])
             break
 
