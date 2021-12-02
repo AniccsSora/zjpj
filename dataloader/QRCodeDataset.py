@@ -5,6 +5,9 @@ import cv2
 
 
 class QRCodeDataset(Dataset):
+    """
+    整張 qrcode + bbox
+    """
     def __init__(self, annotations_dir, img_dir, predefined_class_file):
         self.annotations_dir = annotations_dir
         self.img_dir = img_dir
