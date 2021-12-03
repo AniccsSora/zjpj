@@ -4,10 +4,25 @@ import torch.optim as optim
 from dataloader.PatchesDataset import PatchesDataset
 from torch.utils.data import DataLoader
 from model import QRCode_CNN
+import matplotlib.pyplot as plt
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def train(dataloader, net, lr, epochs, weight=None, class_name=['background', 'QRCode']):
+
+def param_foolproof_1(draw, val_dataloader):
+    if val_dataloader is None:
+        assert draw is None
+    if draw is None:
+        assert val_dataloader is None
+
+
+def train(dataloader, net, lr, epochs, weight=None,
+          class_name=['background', 'QRCode'],
+          draw=None,
+          val_dataloader=None):
+    # 參數防呆
+    param_foolproof_1(draw, val_dataloader)
+
     if torch.cuda.is_available():
         net.cuda()
     if weight is not None:
@@ -17,11 +32,14 @@ def train(dataloader, net, lr, epochs, weight=None, class_name=['background', 'Q
     criterion = nn.CrossEntropyLoss(weight=weight)
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
 
+    eval_loss = {
+        "train": [],
+        "val": []
+    }
     for epoch in range(epochs):
         avg_loss_in_a_epoch, cnt = 0, 0
         for data in dataloader:
             train_images, train_labels = data
-            #train_images = torch.unsqueeze(train_images, 1)
             optimizer.zero_grad()
             y_pred = net(train_images)
             loss = criterion(y_pred.to(device), train_labels.to(device))
@@ -30,9 +48,22 @@ def train(dataloader, net, lr, epochs, weight=None, class_name=['background', 'Q
             # ---
             avg_loss_in_a_epoch += loss.item()
             cnt += 1
-
-        print(f'epoch: {epoch + 1}, loss: {avg_loss_in_a_epoch/cnt}')
-    return net
+        if val_dataloader is not None:
+            with torch.no_grad():
+                val_total_loss = 0.0
+                val_cnt = 0
+                for val_data in val_dataloader:
+                    val_images, val_labels = val_data
+                    val_y_pred = net(val_images)
+                    val_total_loss += criterion(val_y_pred.to(device), val_labels.to(device))
+                    val_cnt += 1
+                _ = val_total_loss / val_cnt
+                eval_loss['val'].append(_)
+        # end of validation.
+        train_loss = avg_loss_in_a_epoch/cnt
+        eval_loss['train'].append(train_loss)
+        print(f'epoch: {epoch + 1}, loss: {train_loss}')
+    return net, eval_loss
 
 
 if __name__ == "__main__":
