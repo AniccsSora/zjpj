@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import logging
+logging.getLogger(__name__)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using {device} device')
@@ -11,6 +13,7 @@ class QRCode_CNN(nn.Module):
     def __init__(self, act_func=F.relu, drop=0.0):
         super(QRCode_CNN, self).__init__()
         self.drop = drop
+        logging.info("drop: {}".format(drop))
         self.drop_layer = nn.Dropout2d(p=self.drop)
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5)
         self.pool = nn.MaxPool2d(2, 2)  #
