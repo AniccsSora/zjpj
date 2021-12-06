@@ -5,6 +5,10 @@ from dataloader.PatchesDataset import PatchesDataset
 from torch.utils.data import DataLoader
 from model import QRCode_CNN
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+import logging
+logging.getLogger(__name__)
+
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -22,11 +26,16 @@ def train(dataloader, net, lr, epochs, weight=None,
           val_dataloader=None):
     # 參數防呆
     param_foolproof_1(draw, val_dataloader)
+    # logging
+    logging.info("lr: {}".format(lr))
+    logging.info("epochs: {}".format(epochs))
 
     if torch.cuda.is_available():
         net.cuda()
     if weight is not None:
         print("Dataset weight:", weight)
+        logging.info("Use dataset weight to train.")
+        logging.info("Dataset weight: {}".format(weight))
         weight = torch.tensor([weight['QRCode'], weight['background']]).to(device)
 
     criterion = nn.CrossEntropyLoss(weight=weight)
@@ -36,9 +45,10 @@ def train(dataloader, net, lr, epochs, weight=None,
         "train": [],
         "val": []
     }
+    logging.info("===================================")
     for epoch in range(epochs):
         avg_loss_in_a_epoch, cnt = 0, 0
-        for data in dataloader:
+        for data in tqdm(dataloader, desc=f'Epoch {epoch+1} - Training', position=0, leave=True):
             train_images, train_labels = data
             optimizer.zero_grad()
             y_pred = net(train_images)
@@ -52,7 +62,7 @@ def train(dataloader, net, lr, epochs, weight=None,
             with torch.no_grad():
                 val_total_loss = 0.0
                 val_cnt = 0
-                for val_data in val_dataloader:
+                for val_data in tqdm(val_dataloader, desc=f'\tEpoch {epoch+1} - Evaluating', leave=True):
                     val_images, val_labels = val_data
                     val_y_pred = net(val_images)
                     val_total_loss += criterion(val_y_pred.to(device), val_labels.to(device))
@@ -62,7 +72,8 @@ def train(dataloader, net, lr, epochs, weight=None,
         # end of validation.
         train_loss = avg_loss_in_a_epoch/cnt
         eval_loss['train'].append(train_loss)
-        print(f'epoch: {epoch + 1}, loss: {train_loss}')
+        print(f'\repoch: {epoch + 1}, loss: {train_loss}')
+        logging.info(f'epoch: {epoch + 1}, loss: {train_loss}')
     return net, eval_loss
 
 
