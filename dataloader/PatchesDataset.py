@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import glob
 from os.path import join as pjoin
 from PIL import Image
@@ -59,6 +59,29 @@ class PatchesDataset(Dataset):
             res = data
 
         return torch.tensor(res).to(self.device)
+
+
+def get_Dataloader(qrcode_dir=None, background_dir=None, device=None,
+                   batch_size=64, shuffle=True):
+    """
+
+    @param qrcode_dir: 與 background_dir 可以擇一設定或都指定。
+    @param background_dir: 與 qrcode_dir 可以擇一設定或都指定。
+    @param device: 可不指定。
+    @param batch_size: 預設 64。
+    @param shuffle: True
+    @return: torch.util.data.Dataloader
+    """
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    patches_dataset = PatchesDataset(qrcode_patches_dir=qrcode_dir,
+                                     background_patches_dir=background_dir,
+                                     device=device)
+
+    res_dataloader = DataLoader(patches_dataset,
+                                batch_size=batch_size, shuffle=shuffle)
+    return res_dataloader
+
+
 if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     patches_dataset = PatchesDataset(qrcode_patches_dir='../data/pathes_of_qrcode_32x32',
