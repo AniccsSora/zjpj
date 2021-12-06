@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from dataloader.PatchesDataset import PatchesDataset
+from dataloader.PatchesDataset import PatchesDataset, get_Dataloader
 from torch.utils.data import DataLoader
 from model import QRCode_CNN
 import matplotlib.pyplot as plt
@@ -90,8 +90,8 @@ if __name__ == "__main__":
 
     net = QRCode_CNN(drop=0.1)
 
-    net = train(train_dataloader, net, lr=1e-3, epochs=2, weight=patches_dataset.weight)
-    torch.save(net.state_dict(), './trained.pt')
+    net, eval_loss = train(train_dataloader, net, lr=1e-4, epochs=2, weight=patches_dataset.weight)
+    torch.save(net.state_dict(), './trained_e4_ep50.pt')
     val_background_dir="./data/val_patch_False"
     val_qrcode_dir = "./data/val_patch_True"
     same_qr_dir = './data/pathes_of_qrcode_32x32'
