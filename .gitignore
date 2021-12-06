@@ -1,10 +1,13 @@
 !data/background_patch/*.bmp
+!log_save
+
 *.png
 *.jpg
 .idea/
 __pycache__/
 *.py[cod]
 *$py.class
+
 /log*
 .ipynb_checkpoints/*
 misc/.ipynb_checkpoints/*
