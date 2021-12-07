@@ -34,8 +34,9 @@ def train(dataloader, net, lr, epochs, weight=None,
         net.cuda()
     if weight is not None:
         print("Dataset weight:", weight)
-        logging.info("Use dataset weight to train.")
-        logging.info("Dataset weight: {}".format(weight))
+        logging.info("\rUse dataset weight to train.")
+        logging.info("\rDataset weight: {}".format(weight))
+        # 注意: 跟label相反，label:0 -> 背景， label:1 -> QRCode，所以權重將是倒數。
         weight = torch.tensor([weight['QRCode'], weight['background']]).to(device)
 
     criterion = nn.CrossEntropyLoss(weight=weight)
@@ -52,7 +53,7 @@ def train(dataloader, net, lr, epochs, weight=None,
             train_images, train_labels = data
             optimizer.zero_grad()
             y_pred = net(train_images)
-            loss = criterion(y_pred.to(device), train_labels.to(device))
+            loss = criterion(y_pred, train_labels)
             loss.backward()
             optimizer.step()
             # ---
