@@ -38,6 +38,7 @@ class PatchesDataset(Dataset):
             is_qrcode = True
         image = cv2.imread(self.data[idx], cv2.IMREAD_GRAYSCALE)
         label = 1 if is_qrcode else 0
+        label = torch.tensor(label, device=self.device, dtype=torch.uint8)
 
         image = image/255.0
         res_tensor = torch.tensor(image, device=self.device, dtype=torch.float32)
