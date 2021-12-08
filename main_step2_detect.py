@@ -64,7 +64,7 @@ if __name__ == "__main__":
     net.load_state_dict(torch.load(weight_path))
     net.cuda()
     class_label = ['background', 'QRCode']
-    scale_list = [0.3, 0.5, 0.7]  # 這被大量參用
+    scale_list = [0.3, 0.5, 0.7, 1.0]  # 這被大量參用
     use_0_1 = False
     # 存放著 ndarray
     multiple_scalling_imgs = scalling_img(pred_img, scale_list=scale_list)
