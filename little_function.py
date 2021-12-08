@@ -65,16 +65,55 @@ def cutting_cube(w_h, cube_size, overlap = 1.0):
     在給定的範圍內切出正方形的框框，回傳座標組
     @param w_h: 寬跟長
     @param cube_size: 方框的大小(正方形)
-    @return: tuple
+    @param overlap: 重疊程度。(float)，1: 剛好不重疊。
+    @return: 生成器(generate)
     """
-    x_shift, y_shift = cube_size * overlap, cube_size * overlap
+    x_shift, y_shift = int(cube_size * overlap), int(cube_size * overlap)
     x, y = 0, 0
-    while y+cube_size <= w_h[1]:
-        while x+cube_size <= w_h[0]:
+    w, h = w_h[0], w_h[1]
+    while y+cube_size <= h:
+        while x+cube_size <= w:
             yield tuple((x, y, x+cube_size, y+cube_size))
-            x = x+cube_size
-        y = y+cube_size
+            x = x+x_shift
+        y = y+y_shift
         x = 0
+
+
+def cutting_cube_include_surplus(w_h, cube_size, overlap=0.9):
+    """
+    Note:
+    在給定的範圍內切出正方形的框框，回傳座標組，並且會回傳最後仍然剩下的座標組。
+    最後一次的迭帶 stride!=cube_size.
+    對任何圖片大小，總有機會在每一 列 or 行 有剩下且不足以補滿cube_size的殘邊，
+    這個 function 將會將其納入回傳座標組。
+    ---
+    @param w_h: 圖片寬跟長:(tuple)。
+    @param cube_size: 方框的大小(正方形):(int)。
+    @param overlap: 重疊程度。(float)，1: 剛好不重疊。
+    @return: 生成器(generate)。
+    """
+    assert overlap <= 1.0 and overlap >= 0.01
+    x_shift, y_shift = int(cube_size * overlap), int(cube_size * overlap)
+    x, y = 0, 0
+    w, h = w_h[0], w_h[1]
+    while y+cube_size <= h:
+        while x+cube_size <= w:
+            yield tuple((x, y, x+cube_size, y+cube_size))
+            x = x+x_shift
+        else:
+            if x != w-1:  # 去除cube_size整除時會重複最後一個row的問題。
+                yield tuple((w-cube_size, y, x + cube_size, y + cube_size))
+                x = x + x_shift
+        y = y+y_shift
+        x = 0
+    else:
+        while x+cube_size <= w:
+            yield tuple((x, h-cube_size, x+cube_size, y+cube_size))
+            x = x+x_shift
+        else:
+            if x != w-1:  # 去除cube_size整除時會重複最後一個row的問題。
+                yield tuple((w - cube_size, h-cube_size, x + cube_size, y + cube_size))
+                x = x + x_shift
 
 def analysis_yolo_row_data(rows, w ,h):
     """
