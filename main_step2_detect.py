@@ -13,12 +13,44 @@ parser = argparse.ArgumentParser("main2 參數設定")
 param = parser.parse_args()
 
 def scalling_img(img: np.ndarray, scale_list=[0.3, 0.5, 0.7]):
-    res_list = []
     w, h = img.shape[1::-1]
+    res_dict = dict.fromkeys(scale_list)
     for scale in scale_list:
         re_w, re_h = int(w*scale), int(h*scale)
-        res_list.append(cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA))
-    return res_list
+        # res_list.append(cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA))
+        res_dict[scale] = cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
+    return res_dict
+
+def get_tensor_batch(dict_muiltiple_images: dict, dict_xyxy: dict, device):
+    """
+
+    """
+    assert dict_muiltiple_images.keys() == dict_xyxy.keys()
+    dkeys = dict_muiltiple_images.keys()
+    res_tensor_dict = dict.fromkeys(dkeys)
+
+    for scale_val in res_tensor_dict.keys():
+        tmp_ = []
+        image = dict_muiltiple_images[scale_val]
+        xyxy_generator = dict_xyxy[scale_val]
+        # res_tensor_dict[scale_val] = 這邊塞一個 batch
+        for xyxy in xyxy_generator:
+            p = image[xyxy[1]:xyxy[3], xyxy[0]:xyxy[2]]  # patch
+            tmp_.append(p)
+        # 前處理，因應效能問題
+        tmp_ = np.array(tmp_)
+        # 將一張 scalling image patches 傳成 tensor
+        res_tensor_dict[scale_val] = torch.tensor(tmp_, dtype=torch.float32, device=device).view(-1,1,32,32)
+
+    return res_tensor_dict
+
+
+def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube_size, overlap):
+    res_dict = dict.fromkeys(scale_list)
+    for scale_val, scale_img in multiple_scalling_imgs.items():
+        w, h = scale_img.shape[1::-1]
+        res_dict[scale_val] = cutting_cube_include_surplus((w, h), cube_size, overlap)
+    return res_dict
 
 
 if __name__ == "__main__":
@@ -31,21 +63,65 @@ if __name__ == "__main__":
     net = model.QRCode_CNN()
     net.load_state_dict(torch.load(weight_path))
     net.cuda()
+    class_label = ['background', 'QRCode']
+    scale_list = [0.3, 0.5, 0.7]  # 這被大量參用
+    use_0_1 = False
+    # 存放著 ndarray
+    multiple_scalling_imgs = scalling_img(pred_img, scale_list=scale_list)
 
-    resize_imgs = scalling_img(pred_img)
+    multiple_patch_xyxy = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
+                                             cube_size=32,
+                                             overlap=1.0)
 
-    for image in resize_imgs:
-        w, h = image.shape[1::-1]
-        # cube_gen = cutting_cube((w, h), 32, overlap=1.0)
-        cube_gen = cutting_cube_include_surplus((w, h), 32, overlap=1.0)
-        for xyxy in cube_gen:
-            _ = np.array(image)
-            drawed = cv2.rectangle(_, xyxy[0:2], xyxy[2:], color=(255,0,0), thickness=1)
-            cv2.destroyAllWindows()
-            cv2.imshow("show", drawed)
-            cv2.waitKey(0)
-            #cv2.rectangle(影像, 頂點座標, 對向頂點座標, 顏色, 線條寬度)
+    # for scale_val, scale_img in multiple_scalling_imgs.items():
+    #     w, h = scale_img.shape[1::-1]
+    #     multiple_patch_xyxy[scale_val] = cutting_cube_include_surplus((w, h), 32, overlap=1.0)
 
+    # predict 紀錄
+    predict_dict = dict.fromkeys(scale_list)
+
+    multi_scaling_batch = get_tensor_batch(dict_muiltiple_images=multiple_scalling_imgs,
+                                           dict_xyxy=multiple_patch_xyxy,
+                                           device=device)
+
+    pred_label_dict = dict.fromkeys(scale_list)  # 各 scalling 預測 class 結果
+    pred_label_p_dict = dict.fromkeys(scale_list)  # 各 scalling 預測 為該 class 的機率。
+    for scale_val, batch in multi_scaling_batch.items():
+        # !!! 這邊是 0~255 下去判斷。 !!!
+        if use_0_1:
+            pred_p = net(batch / 255.0).softmax(axis=1)
+        else:
+            pred_p = net(batch).softmax(axis=1)
+        pred_p = pred_p.detach().cpu().numpy()
+        pred_label = np.argmax(pred_p, axis=1)  # label number
+        pred_label_dict[scale_val] = pred_label
+        pred_label_p = pred_p.max(axis=1)  # 機率
+        pred_label_p_dict[scale_val] = pred_label_p
+
+    # 各scalling 有選到的座標
+    pick_xyxy_dict = dict.fromkeys(scale_list, [])
+    # 因為用生成器所以必須這樣再一次init
+    multiple_patch_xyxy_2st = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
+                                             cube_size=32,
+                                             overlap=1.0)
+    # 有了 pred_label 了 接下來將 1 座標篩出來
+    for scale_val, pred_c in pred_label_dict.items():
+        pick_idx = np.argwhere(pred_c == 1).squeeze()
+        all_pred_pr = pred_label_p_dict[scale_val]  # 根據預測的label的期望機率
+        #
+        for idx, xyxy in enumerate(multiple_patch_xyxy_2st[scale_val]):
+            if idx in pick_idx:
+                print("預測機率+入:", all_pred_pr[idx])
+                pick_xyxy_dict[scale_val].append(xyxy)
+
+    # 各 scalling 的座標點
+    for scale_val, xyxy_s in pick_xyxy_dict.items():
+        image = multiple_scalling_imgs[scale_val]
+        image_ = np.array(image)
+        for xyxy in xyxy_s:
+            cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=1)
+        cv2.imshow(str(scale_val), image_)
+    cv2.waitKey(0)
 
 
     # =============== 計算 loss
