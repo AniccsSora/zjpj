@@ -6,6 +6,7 @@ from torch.nn.functional import one_hot
 import numpy as np
 import cv2
 import argparse
+from little_function import cutting_cube, cutting_cube_include_surplus
 
 parser = argparse.ArgumentParser("main2 參數設定")
 # parser.add_argument("--")
@@ -32,6 +33,18 @@ if __name__ == "__main__":
     net.cuda()
 
     resize_imgs = scalling_img(pred_img)
+
+    for image in resize_imgs:
+        w, h = image.shape[1::-1]
+        # cube_gen = cutting_cube((w, h), 32, overlap=1.0)
+        cube_gen = cutting_cube_include_surplus((w, h), 32, overlap=1.0)
+        for xyxy in cube_gen:
+            _ = np.array(image)
+            drawed = cv2.rectangle(_, xyxy[0:2], xyxy[2:], color=(255,0,0), thickness=1)
+            cv2.destroyAllWindows()
+            cv2.imshow("show", drawed)
+            cv2.waitKey(0)
+            #cv2.rectangle(影像, 頂點座標, 對向頂點座標, 顏色, 線條寬度)
 
 
 
