@@ -40,8 +40,15 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info(f"device: {device}")
 
-    patches_dataset = PatchesDataset(qrcode_patches_dir='./data/pathes_of_qrcode_32x32',
-                                     background_patches_dir='./data/background_patch',
+    # QRCode patch 資料夾
+    # QRCode_patch_dir_root = './data/pathes_of_qrcode_32x32'  # 裡面參雜一些很不像 QRCode 的patch
+    QRCode_patch_dir_root = './data/manual_pick_QRcode_Patch'
+
+    # 背景 patch 資料夾
+    Background_patch_dir_root = './data/background_patch'
+
+    patches_dataset = PatchesDataset(qrcode_patches_dir=QRCode_patch_dir_root,
+                                     background_patches_dir=Background_patch_dir_root,
                                      device=device)
     val_dataset = PatchesDataset(qrcode_patches_dir='./data/val_patch_True',
                                  background_patches_dir='./data/val_patch_False',

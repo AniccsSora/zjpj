@@ -121,8 +121,10 @@ if __name__ == "__main__":
 
     __VISUAL_DEMO__ = False
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # range() 內第一個參數可控制從第幾張圖片開始。
-    for data_idx in range(31, len(qr_code_dataset)):
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    for data_idx in range(35, len(qr_code_dataset)):
         data = qr_code_dataset[data_idx]
         c_and_bboxes = data[0]  # class and bounding box
         image = data[1]  # 圖片本身

@@ -54,6 +54,7 @@ def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube
 
 
 if __name__ == "__main__":
+    # 針對實驗寫迴圈 生出圖片
     pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     weight_path = "./log_save/20211206_2247_31/weight.pt"
