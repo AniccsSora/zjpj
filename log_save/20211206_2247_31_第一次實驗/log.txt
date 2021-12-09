@@ -1,0 +1,58 @@
+INFO:root:device: cuda
+INFO:root:batch_size: 32
+INFO:root:drop: 0.1
+INFO:root:lr: 0.0001
+INFO:root:epochs: 50
+INFO:root:Use dataset weight to train.
+INFO:root:Dataset weight: {'background': 0.9588838689512119, 'QRCode': 0.04111613104878811}
+INFO:root:===================================
+INFO:root:epoch: 1, loss: 0.6797983552650971
+INFO:root:epoch: 2, loss: 0.6715671718120575
+INFO:root:epoch: 3, loss: 0.6684419539841738
+INFO:root:epoch: 4, loss: 0.6602212697809393
+INFO:root:epoch: 5, loss: 0.6511647048863498
+INFO:root:epoch: 6, loss: 0.6426862995732915
+INFO:root:epoch: 7, loss: 0.6339504740454934
+INFO:root:epoch: 8, loss: 0.6205035543170843
+INFO:root:epoch: 9, loss: 0.600794850777496
+INFO:root:epoch: 10, loss: 0.5596726043386893
+INFO:root:epoch: 11, loss: 0.4968739977343516
+INFO:root:epoch: 12, loss: 0.41153346572409977
+INFO:root:epoch: 13, loss: 0.35681293769654904
+INFO:root:epoch: 14, loss: 0.3250015599686991
+INFO:root:epoch: 15, loss: 0.2899239968643947
+INFO:root:epoch: 16, loss: 0.2892263900149952
+INFO:root:epoch: 17, loss: 0.2591391258381984
+INFO:root:epoch: 18, loss: 0.2591078062423251
+INFO:root:epoch: 19, loss: 0.25350031112574717
+INFO:root:epoch: 20, loss: 0.24454078594053333
+INFO:root:epoch: 21, loss: 0.2395706819387322
+INFO:root:epoch: 22, loss: 0.23308515805581753
+INFO:root:epoch: 23, loss: 0.23133198248561132
+INFO:root:epoch: 24, loss: 0.23577885069799695
+INFO:root:epoch: 25, loss: 0.23174211951311338
+INFO:root:epoch: 26, loss: 0.2245137207464061
+INFO:root:epoch: 27, loss: 0.22143216632475907
+INFO:root:epoch: 28, loss: 0.22160866418599406
+INFO:root:epoch: 29, loss: 0.2098669582859359
+INFO:root:epoch: 30, loss: 0.21951417870480905
+INFO:root:epoch: 31, loss: 0.21493795376948335
+INFO:root:epoch: 32, loss: 0.2109428681941195
+INFO:root:epoch: 33, loss: 0.20874105497009374
+INFO:root:epoch: 34, loss: 0.20342184115878562
+INFO:root:epoch: 35, loss: 0.2140233196385882
+INFO:root:epoch: 36, loss: 0.20465152459896424
+INFO:root:epoch: 37, loss: 0.20879116998816077
+INFO:root:epoch: 38, loss: 0.19985750743103298
+INFO:root:epoch: 39, loss: 0.20149154636839575
+INFO:root:epoch: 40, loss: 0.20155257467688484
+INFO:root:epoch: 41, loss: 0.1999947674843398
+INFO:root:epoch: 42, loss: 0.19711070154962892
+INFO:root:epoch: 43, loss: 0.1948710326757282
+INFO:root:epoch: 44, loss: 0.1970668660866266
+INFO:root:epoch: 45, loss: 0.19897294035350735
+INFO:root:epoch: 46, loss: 0.19959928011352365
+INFO:root:epoch: 47, loss: 0.20041524728336796
+INFO:root:epoch: 48, loss: 0.18853052043102003
+INFO:root:epoch: 49, loss: 0.19002270077016542
+INFO:root:epoch: 50, loss: 0.1866036284249276
