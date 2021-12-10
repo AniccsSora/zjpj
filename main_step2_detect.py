@@ -19,7 +19,9 @@ def scalling_img(img: np.ndarray, scale_list=[0.3, 0.5, 0.7]):
     res_dict = dict.fromkeys(scale_list)
     for scale in scale_list:
         re_w, re_h = int(w*scale), int(h*scale)
-        res_dict[scale] = cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
+        img_gauBr = cv2.GaussianBlur(img, (21, 21), 5)
+        img_bil = cv2.bilateralFilter(img, 9, 75, 75)
+        res_dict[scale] = cv2.resize(img_gauBr, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
     return res_dict
 
 def get_tensor_batch(dict_muiltiple_images: dict, dict_xyxy: dict, device):
