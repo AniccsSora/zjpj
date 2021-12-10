@@ -14,11 +14,11 @@ logging.getLogger(__name__)
 
 # --- 超參數
 parser = argparse.ArgumentParser("參數設定")
-parser.add_argument('--epochs', type=int, default=50, help='訓練週期次數')
-parser.add_argument('--lr', type=int, default=1e-4, help='learning rate')
+parser.add_argument('--epochs', type=int, default=500, help='訓練週期次數')
+parser.add_argument('--lr', type=int, default=1e-5, help='learning rate')
 parser.add_argument('--log_dir', type=str, default="log_save", help="存放資料夾名")
-parser.add_argument('--drop', type=int, default=0.1, help='conv layer 後的dropout率')
-parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
+parser.add_argument('--drop', type=int, default=0.3, help='conv layer 後的dropout率')
+parser.add_argument('--batch_size', type=int, default=64, help='conv layer 後的dropout率')
 
 param = parser.parse_args()
 
