@@ -7,6 +7,8 @@ import numpy as np
 import cv2
 import argparse
 from little_function import cutting_cube, cutting_cube_include_surplus
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 parser = argparse.ArgumentParser("main2 參數設定")
 # parser.add_argument("--")
@@ -17,7 +19,6 @@ def scalling_img(img: np.ndarray, scale_list=[0.3, 0.5, 0.7]):
     res_dict = dict.fromkeys(scale_list)
     for scale in scale_list:
         re_w, re_h = int(w*scale), int(h*scale)
-        # res_list.append(cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA))
         res_dict[scale] = cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
     return res_dict
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     # 針對實驗寫迴圈 生出圖片
     pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20211206_2247_31/weight.pt"
+    weight_path = "./log_save/20211210_0021_00_第二次實驗/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     net.cuda()
     class_label = ['background', 'QRCode']
     scale_list = [0.3, 0.5, 0.7, 1.0]  # 這被大量參用
-    use_0_1 = False
+    use_0_1 = False  # param
     # 存放著 ndarray
     multiple_scalling_imgs = scalling_img(pred_img, scale_list=scale_list)
 
@@ -115,15 +116,38 @@ if __name__ == "__main__":
                 print("預測機率+入:", all_pred_pr[idx])
                 pick_xyxy_dict[scale_val].append(xyxy)
 
+    # 將預測的 bbox 繪製到多尺度的圖片上
+    with_bbox_multi_images = []  # 存放被畫上 bbox 的 multiple scaling images
     # 各 scalling 的座標點
     for scale_val, xyxy_s in pick_xyxy_dict.items():
         image = multiple_scalling_imgs[scale_val]
         image_ = np.array(image)
-        for xyxy in xyxy_s:
+        for xyxy in xyxy_s:  # xyxy_s = 多個座標組
             cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=1)
-        cv2.imshow(str(scale_val), image_)
-    cv2.waitKey(0)
+        #cv2.imshow(str(scale_val), image_)
+        with_bbox_multi_images.append(image_)
+    #cv2.waitKey(0)
 
+    # === plt show param setting
+    mpl.rcParams["figure.dpi"] = 120  # default: 100
+    nrows, ncols = 2, 2  # array of sub-plots
+    figsize = [10, 6]  # figure size, inches
+    # create figure (fig), and array of axes (ax)
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+    fig.canvas.manager.set_window_title("多尺度預測結果")
+    for i, axi in enumerate(ax.flat):
+        # i runs from 0 to (nrows*ncols-1)
+        # axi is equivalent with ax[rowid][colid]
+        img = with_bbox_multi_images[i]
+        axi.imshow(img, alpha=1.0, cmap=plt.get_cmap('gray'))
+        # get indices of row/column
+        rowid = i // ncols
+        colid = i % ncols
+        # 將 行/列索引 寫為軸的標題以供識別
+        # axi.set_title("Row:" + str(rowid) + ", Col:" + str(colid))
+        axi.set_title(f"Scale: {str(scale_list[i])}")
+    plt.tight_layout()
+    plt.show()
 
     # =============== 計算 loss
     # with torch.no_grad():
