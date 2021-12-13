@@ -19,8 +19,8 @@ def scalling_img(img: np.ndarray, scale_list=[0.3, 0.5, 0.7]):
     res_dict = dict.fromkeys(scale_list)
     for scale in scale_list:
         re_w, re_h = int(w*scale), int(h*scale)
-        img_gauBr = cv2.GaussianBlur(img, (21, 21), 5)
-        img_bil = cv2.bilateralFilter(img, 9, 75, 75)
+        img_gauBr = cv2.GaussianBlur(img, (11, 11), 3)
+        # img_bil = cv2.bilateralFilter(img, 9, 75, 75)
         res_dict[scale] = cv2.resize(img_gauBr, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
     return res_dict
 
