@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from dataloader.PatchesDataset import PatchesDataset, get_Dataloader
 from torch.utils.data import DataLoader
 from model import QRCode_CNN
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import logging
 logging.getLogger(__name__)
-
+import numpy as np
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -20,10 +21,49 @@ def param_foolproof_1(draw, val_dataloader):
         assert val_dataloader is None
 
 
+def _useless_step():
+    class Useless:
+        def __init__(self):
+            pass
+
+        def step(self, qq):
+            pass
+    return Useless()
+
+
+def get_ReduceLROnPlateau(optimizer):
+    """
+    @note:
+    mode(str) {'min', 'max'}: 在'min' mode中,當監控數值"停止下降"時，lr將會降低。
+                              反之 'max'監控數值"停止上升"時lr下降。default: 'min'
+    """
+    res = ReduceLROnPlateau(optimizer,
+                            mode='min',
+                            factor=0.1,  # new_lr = old_lr * factor 的意思。default=0.1
+                            patience=5,  # 可以忍受幾個 eopches 不下降
+                            verbose=True,  # 下降時是否提示
+                            threshold=1e-4,  # 小數點第幾位當成變化閥值?default: 1e-4
+                            threshold_mode='rel',  # default: rel
+                            min_lr=1e-7,  # 最小的學習率。default=1e-4
+                            cooldown=0,  # 觸發更新條件後，等待幾個epoches 再監視。default=0
+                            eps=1e-8  # 更新前後 的 lr 差距小於此值時候，不更新此次的 lr。default=1e-8
+                            )
+    return res
+
+
 def train(dataloader, net, lr, epochs, weight=None,
           class_name=['background', 'QRCode'],
           draw=None,
-          val_dataloader=None):
+          val_dataloader=None,
+          kwargs=None):
+    assert kwargs is not None  # 必須解析參數
+    # -----------------------
+    # 訓練時的各種旗標
+    use_reduceLR = None  # 是否在訓練時期動態降低 lr。
+    # -----------------------
+    if kwargs is not None:
+        use_reduceLR = kwargs['reduceLR']
+    # ------------------------
     # 參數防呆
     param_foolproof_1(draw, val_dataloader)
     # logging
@@ -41,14 +81,19 @@ def train(dataloader, net, lr, epochs, weight=None,
 
     criterion = nn.CrossEntropyLoss(weight=weight)
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+    if use_reduceLR:
+        scheduler = get_ReduceLROnPlateau(optimizer)
+    else:
+        scheduler = _useless_step()
 
     eval_loss = {
         "train": [],
         "val": []
     }
     logging.info("===================================")
+    lr_log = []
     for epoch in range(epochs):
-        avg_loss_in_a_epoch, cnt = 0, 0
+        running_loss_in_epoch, cnt = 0, 0
         for data in tqdm(dataloader, desc=f'Epoch {epoch+1} - Training', position=0, leave=True):
             train_images, train_labels = data
             optimizer.zero_grad()
@@ -57,7 +102,7 @@ def train(dataloader, net, lr, epochs, weight=None,
             loss.backward()
             optimizer.step()
             # ---
-            avg_loss_in_a_epoch += loss.item()
+            running_loss_in_epoch += loss.item()
             cnt += 1
         if val_dataloader is not None:
             with torch.no_grad():
@@ -71,11 +116,13 @@ def train(dataloader, net, lr, epochs, weight=None,
                 _ = val_total_loss / val_cnt
                 eval_loss['val'].append(_)
         # end of validation.
-        train_loss = avg_loss_in_a_epoch/cnt
+        train_loss = running_loss_in_epoch / cnt
         eval_loss['train'].append(train_loss)
         print(f'\repoch: {epoch + 1}, loss: {train_loss}')
         logging.info(f'epoch: {epoch + 1}, loss: {train_loss}')
-    return net, eval_loss
+        lr_log.append(optimizer.state_dict()['param_groups'][0]['lr'])
+        scheduler.step(running_loss_in_epoch)
+    return net, eval_loss, np.array(lr_log)
 
 
 if __name__ == "__main__":
@@ -91,7 +138,7 @@ if __name__ == "__main__":
 
     net = QRCode_CNN(drop=0.1)
 
-    net, eval_loss = train(train_dataloader, net, lr=1e-4, epochs=2, weight=patches_dataset.weight)
+    net, eval_loss, lr_log = train(train_dataloader, net, lr=1e-4, epochs=2, weight=patches_dataset.weight)
     torch.save(net.state_dict(), './trained_e4_ep50.pt')
     val_background_dir="./data/val_patch_False"
     val_qrcode_dir = "./data/val_patch_True"
