@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import argparse
 import logging
 import pandas as pd
+import numpy as np
 logging.getLogger(__name__)
 
 # --- 超參數
@@ -36,6 +37,9 @@ def set_logger(path, log_fname='log.txt'):
     logging.basicConfig(filename=pjoin(path, log_fname), level=logging.INFO, force=True)
     print("log save:", pjoin(path, log_fname))
 
+
+def get_min_lr(lr_list):
+    return np.amin(np.array(lr_log))
 
 if __name__ == "__main__":
     # --- logger setting
@@ -82,7 +86,13 @@ if __name__ == "__main__":
 
     torch.save(net.state_dict(), pjoin(save_path, 'weight.pt'))
 
+    # 繪製 loss 圖表
     plt.figure()
+    plt.xlim(0, param.epochs)
+    plt.xlabel('epoch')
+    plt.xticks(np.arange(0, param.epochs, step=5))
+    _ylim_max = np.amax(np.array([loss_train, loss_val]).flatten())*1.05
+    plt.ylim(0.0, round(_ylim_max+0.05, 2))
     plt.plot(loss_train, label='train')
     plt.plot(loss_val, label='val')
     plt.title(title_str)
@@ -90,13 +100,21 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'loss_graph.png'))
 
+    # 繪製 lr 圖表
     plt.figure()
+    plt.xlim(0, param.epochs)
+    plt.xlabel('epoch')
+    plt.xticks(np.arange(0, param.epochs, step=5))
+    plt.ylim(get_min_lr(lr_log)*0.95, param.lr*1.05)
+    plt.yscale("log")
     plt.plot(lr_log.tolist(), label='lr')
     plt.title('learning rate')
     plt.legend()
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'learning_rate.png'))
-
+    logging.info("lr rate dynamic:")
+    for lr in lr_log.tolist():
+        logging.info(f"  lr: {lr}")
     _cost_t_time = _train_finish - _train_start
     _cost_t_time = str(pd.to_timedelta(timedelta(seconds=_cost_t_time))).split('.')[0]
     print(f"Begin train: {current_time.strftime('%m/%d %H:%M:%S')}")
