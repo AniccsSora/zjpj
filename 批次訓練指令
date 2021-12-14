@@ -1,0 +1,1 @@
+python main_step1_train.py --epochs 100 --lr 1e-3 --log_dir "log_使用reduce與否" --drop 0.3 --batch_size 32 --reduceLR True --folder_postfix ""
