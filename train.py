@@ -42,7 +42,7 @@ def get_ReduceLROnPlateau(optimizer):
                             factor=0.1,  # new_lr = old_lr * factor 的意思。default=0.1
                             patience=5,  # 可以忍受幾個 eopches 不下降
                             verbose=True,  # 下降時是否提示
-                            threshold=1e-4,  # 小數點第幾位當成變化閥值?default: 1e-4
+                            threshold=1e-3,  # 小數點第幾位當成變化閥值?default: 1e-4
                             threshold_mode='rel',  # default: rel
                             min_lr=1e-7,  # 最小的學習率。default=1e-4
                             cooldown=0,  # 觸發更新條件後，等待幾個epoches 再監視。default=0
