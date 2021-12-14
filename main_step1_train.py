@@ -70,12 +70,12 @@ if __name__ == "__main__":
     val_dataloader = DataLoader(val_dataset, batch_size=512, shuffle=True, pin_memory=False)
 
     net = QRCode_CNN(drop=param.drop)  # drop: drop layer.
-    _train_start = time.process_time()
+    _train_start = time.perf_counter()
     net, loss, lr_log = train.train(patch_dataloader, net=net, lr=param.lr,
                             epochs=param.epochs, weight=data_weight,
                             draw=save_path,
                             val_dataloader=val_dataloader, kwargs=kwargs)
-    _train_finish = time.process_time()
+    _train_finish = time.perf_counter()
 
     loss_train = loss['train']
     loss_val = [_.item() for _ in loss['val']]
