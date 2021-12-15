@@ -118,9 +118,10 @@ def train(dataloader, net, lr, epochs, weight=None,
         # end of validation.
         train_loss = running_loss_in_epoch / cnt
         eval_loss['train'].append(train_loss)
-        print(f'\repoch: {epoch + 1}, loss: {train_loss}')
-        logging.info(f'epoch: {epoch + 1}, loss: {train_loss}')
-        lr_log.append(optimizer.state_dict()['param_groups'][0]['lr'])
+        current_lr = optimizer.state_dict()['param_groups'][0]['lr']
+        print(f'\repoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
+        logging.info(f'epoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
+        lr_log.append(current_lr)
         scheduler.step(running_loss_in_epoch)
     return net, eval_loss, np.array(lr_log)
 

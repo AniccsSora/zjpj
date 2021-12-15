@@ -1,0 +1,111 @@
+INFO:root:device: cuda
+INFO:root:batch_size: 32
+INFO:root:drop: 0.6
+INFO:root:lr: 0.01
+INFO:root:epochs: 50
+INFO:root:Use dataset weight to train.
+INFO:root:Dataset weight: {'background': 0.9718910201025287, 'QRCode': 0.028108979897471343}
+INFO:root:===================================
+INFO:root:epoch: 1, loss: 0.6538833408011038
+INFO:root:epoch: 2, loss: 0.6350514627650078
+INFO:root:epoch: 3, loss: 0.629683053364521
+INFO:root:epoch: 4, loss: 0.5781129356370776
+INFO:root:epoch: 5, loss: 0.5398349404252695
+INFO:root:epoch: 6, loss: 0.5287135638619052
+INFO:root:epoch: 7, loss: 0.5000955516791475
+INFO:root:epoch: 8, loss: 0.5141023530129131
+INFO:root:epoch: 9, loss: 0.5371195869606064
+INFO:root:epoch: 10, loss: 0.5435483743458931
+INFO:root:epoch: 11, loss: 0.5743602919658135
+INFO:root:epoch: 12, loss: 0.5898934496329964
+INFO:root:epoch: 13, loss: 0.590158769432078
+INFO:root:epoch: 14, loss: 0.5893346682931837
+INFO:root:epoch: 15, loss: 0.5769118827735082
+INFO:root:epoch: 16, loss: 0.5789388498466318
+INFO:root:epoch: 17, loss: 0.5760753219587039
+INFO:root:epoch: 18, loss: 0.5679266502116815
+INFO:root:epoch: 19, loss: 0.5621824857005318
+INFO:root:epoch: 20, loss: 0.5722432510025154
+INFO:root:epoch: 21, loss: 0.5588221405641369
+INFO:root:epoch: 22, loss: 0.5556907906140411
+INFO:root:epoch: 23, loss: 0.5625561626754961
+INFO:root:epoch: 24, loss: 0.5665771450579825
+INFO:root:epoch: 25, loss: 0.5580724521881418
+INFO:root:epoch: 26, loss: 0.5664368255979778
+INFO:root:epoch: 27, loss: 0.5599008660907574
+INFO:root:epoch: 28, loss: 0.5723692404438997
+INFO:root:epoch: 29, loss: 0.5618164045513225
+INFO:root:epoch: 30, loss: 0.5771513997644021
+INFO:root:epoch: 31, loss: 0.567518192273093
+INFO:root:epoch: 32, loss: 0.5692156014164728
+INFO:root:epoch: 33, loss: 0.5713951383231972
+INFO:root:epoch: 34, loss: 0.5685441992202735
+INFO:root:epoch: 35, loss: 0.5524352161320094
+INFO:root:epoch: 36, loss: 0.5587054461679845
+INFO:root:epoch: 37, loss: 0.5640600239840879
+INFO:root:epoch: 38, loss: 0.5596888551066593
+INFO:root:epoch: 39, loss: 0.5569003352048099
+INFO:root:epoch: 40, loss: 0.5798455066018452
+INFO:root:epoch: 41, loss: 0.5486159865190421
+INFO:root:epoch: 42, loss: 0.5641696808472083
+INFO:root:epoch: 43, loss: 0.5660287662105665
+INFO:root:epoch: 44, loss: 0.5584890073642107
+INFO:root:epoch: 45, loss: 0.5626904501701477
+INFO:root:epoch: 46, loss: 0.5674356254260184
+INFO:root:epoch: 47, loss: 0.5673817132992419
+INFO:root:epoch: 48, loss: 0.553726482937459
+INFO:root:epoch: 49, loss: 0.560734944901743
+INFO:root:epoch: 50, loss: 0.5687349107370302
+INFO:root:lr rate dynamic:
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:Begin train: 12/15 03:13:39
+INFO:root:cost time: 0 days 00:11:48

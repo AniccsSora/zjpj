@@ -1,0 +1,111 @@
+INFO:root:device: cuda
+INFO:root:batch_size: 32
+INFO:root:drop: 0.7
+INFO:root:lr: 0.0001
+INFO:root:epochs: 50
+INFO:root:Use dataset weight to train.
+INFO:root:Dataset weight: {'background': 0.9718910201025287, 'QRCode': 0.028108979897471343}
+INFO:root:===================================
+INFO:root:epoch: 1, loss: 0.6700121929412828
+INFO:root:epoch: 2, loss: 0.6581216472068984
+INFO:root:epoch: 3, loss: 0.6534698922770239
+INFO:root:epoch: 4, loss: 0.6526653251814798
+INFO:root:epoch: 5, loss: 0.6520556083316082
+INFO:root:epoch: 6, loss: 0.6546110200453858
+INFO:root:epoch: 7, loss: 0.6494376447813287
+INFO:root:epoch: 8, loss: 0.6491225074777726
+INFO:root:epoch: 9, loss: 0.6509274923505045
+INFO:root:epoch: 10, loss: 0.6500102248914115
+INFO:root:epoch: 11, loss: 0.642750089778865
+INFO:root:epoch: 12, loss: 0.6451193481464192
+INFO:root:epoch: 13, loss: 0.6415260475039701
+INFO:root:epoch: 14, loss: 0.6480186931500778
+INFO:root:epoch: 15, loss: 0.6431474469423734
+INFO:root:epoch: 16, loss: 0.6430528936684681
+INFO:root:epoch: 17, loss: 0.643335816198291
+INFO:root:epoch: 18, loss: 0.6401566026893549
+INFO:root:epoch: 19, loss: 0.6372769254896083
+INFO:root:epoch: 20, loss: 0.6427386755168328
+INFO:root:epoch: 21, loss: 0.6435655887010567
+INFO:root:epoch: 22, loss: 0.6398136309497264
+INFO:root:epoch: 23, loss: 0.6413980999868878
+INFO:root:epoch: 24, loss: 0.6351121061963491
+INFO:root:epoch: 25, loss: 0.6404500597089694
+INFO:root:epoch: 26, loss: 0.6343246203046258
+INFO:root:epoch: 27, loss: 0.6369726715221808
+INFO:root:epoch: 28, loss: 0.6356892053922896
+INFO:root:epoch: 29, loss: 0.6352616954958461
+INFO:root:epoch: 30, loss: 0.6347132718694802
+INFO:root:epoch: 31, loss: 0.6362569424054461
+INFO:root:epoch: 32, loss: 0.631653152529706
+INFO:root:epoch: 33, loss: 0.6333304075575665
+INFO:root:epoch: 34, loss: 0.6343491919352424
+INFO:root:epoch: 35, loss: 0.6327170585565145
+INFO:root:epoch: 36, loss: 0.6321061571603761
+INFO:root:epoch: 37, loss: 0.628906256531264
+INFO:root:epoch: 38, loss: 0.6322178741296133
+INFO:root:epoch: 39, loss: 0.6332792067560702
+INFO:root:epoch: 40, loss: 0.6326940106039328
+INFO:root:epoch: 41, loss: 0.6295663399645857
+INFO:root:epoch: 42, loss: 0.6302139169877844
+INFO:root:epoch: 43, loss: 0.6251393242655099
+INFO:root:epoch: 44, loss: 0.6253545602464544
+INFO:root:epoch: 45, loss: 0.6280868176652142
+INFO:root:epoch: 46, loss: 0.6264847660811127
+INFO:root:epoch: 47, loss: 0.6273030454282602
+INFO:root:epoch: 48, loss: 0.6330708391813503
+INFO:root:epoch: 49, loss: 0.6315464463297614
+INFO:root:epoch: 50, loss: 0.6249571913239267
+INFO:root:lr rate dynamic:
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 1e-05
+INFO:root:Begin train: 12/15 06:59:31
+INFO:root:cost time: 0 days 00:11:45

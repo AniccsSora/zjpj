@@ -1,0 +1,111 @@
+INFO:root:device: cuda
+INFO:root:batch_size: 32
+INFO:root:drop: 0.7
+INFO:root:lr: 0.01
+INFO:root:epochs: 50
+INFO:root:Use dataset weight to train.
+INFO:root:Dataset weight: {'background': 0.9718910201025287, 'QRCode': 0.028108979897471343}
+INFO:root:===================================
+INFO:root:epoch: 1, loss: 0.6605509080500453
+INFO:root:epoch: 2, loss: 0.6575795828637497
+INFO:root:epoch: 3, loss: 0.6554993265625741
+INFO:root:epoch: 4, loss: 0.6577730648096095
+INFO:root:epoch: 5, loss: 0.6550121329875721
+INFO:root:epoch: 6, loss: 0.6543278888169792
+INFO:root:epoch: 7, loss: 0.6596487879917766
+INFO:root:epoch: 8, loss: 0.6562951516984357
+INFO:root:epoch: 9, loss: 0.66020228259581
+INFO:root:epoch: 10, loss: 0.6613073853388236
+INFO:root:epoch: 11, loss: 0.6580642007058057
+INFO:root:epoch: 12, loss: 0.65808064277879
+INFO:root:epoch: 13, loss: 0.6541692324764821
+INFO:root:epoch: 14, loss: 0.6546360336614577
+INFO:root:epoch: 15, loss: 0.6533718460392117
+INFO:root:epoch: 16, loss: 0.6515983612333214
+INFO:root:epoch: 17, loss: 0.6552541685148278
+INFO:root:epoch: 18, loss: 0.6521111565674647
+INFO:root:epoch: 19, loss: 0.6522503786379023
+INFO:root:epoch: 20, loss: 0.6544779927691043
+INFO:root:epoch: 21, loss: 0.6569514985077948
+INFO:root:epoch: 22, loss: 0.654726488951381
+INFO:root:epoch: 23, loss: 0.6528353107129232
+INFO:root:epoch: 24, loss: 0.6537423686537733
+INFO:root:epoch: 25, loss: 0.6507156987984976
+INFO:root:epoch: 26, loss: 0.6491612616933292
+INFO:root:epoch: 27, loss: 0.6510081181155164
+INFO:root:epoch: 28, loss: 0.6543844382846333
+INFO:root:epoch: 29, loss: 0.6546022639803685
+INFO:root:epoch: 30, loss: 0.6536620275750344
+INFO:root:epoch: 31, loss: 0.6502732059079639
+INFO:root:epoch: 32, loss: 0.6543647612326712
+INFO:root:epoch: 33, loss: 0.6542904752942958
+INFO:root:epoch: 34, loss: 0.6562016688932152
+INFO:root:epoch: 35, loss: 0.6506273605162707
+INFO:root:epoch: 36, loss: 0.6505340572933686
+INFO:root:epoch: 37, loss: 0.652038684536739
+INFO:root:epoch: 38, loss: 0.6549600293074304
+INFO:root:epoch: 39, loss: 0.6570931184577239
+INFO:root:epoch: 40, loss: 0.6554758213666263
+INFO:root:epoch: 41, loss: 0.6494095274701742
+INFO:root:epoch: 42, loss: 0.6478570900569305
+INFO:root:epoch: 43, loss: 0.6501733039130163
+INFO:root:epoch: 44, loss: 0.6508496004134472
+INFO:root:epoch: 45, loss: 0.6477759861649729
+INFO:root:epoch: 46, loss: 0.6526530832052231
+INFO:root:epoch: 47, loss: 0.6521845275800312
+INFO:root:epoch: 48, loss: 0.6543555081329732
+INFO:root:epoch: 49, loss: 0.6534444326140384
+INFO:root:epoch: 50, loss: 0.6527325798848277
+INFO:root:lr rate dynamic:
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.01
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 0.0001
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1e-05
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-06
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:  lr: 1.0000000000000002e-07
+INFO:root:Begin train: 12/15 03:25:30
+INFO:root:cost time: 0 days 00:11:43
