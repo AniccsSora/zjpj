@@ -12,18 +12,25 @@ import argparse
 import logging
 import pandas as pd
 import numpy as np
+import sys
+os.environ['KMP_DUPLICATE_LIB_OK']='True'  # 暫且安捏
 logging.getLogger(__name__)
 
 # --- 超參數
 parser = argparse.ArgumentParser("參數設定")
+# hyperparameter
 parser.add_argument('--epochs', type=int, default=10, help='訓練週期次數')
-parser.add_argument('--lr', type=float, default=1e-2, help='learning rate')
-parser.add_argument('--log_dir', type=str, default="log_save", help="存放資料夾名")
-parser.add_argument('--drop', type=float, default=0.3, help='conv layer 後的dropout率')
+parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
+parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dropout率')
 parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
-parser.add_argument('--reduceLR', type=bool, default=False, help='使用 ReduceLROnPlateau 來優化訓練')
-# 記錄用參數
-parser.add_argument('--folder_postfix', type=str, default="有無動態lr差異測試", help="資料夾後輟名")
+# optim
+parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
+# other
+parser.add_argument('--log_dir', type=str, default="log_save", help="存放資料夾名")
+parser.add_argument('--weight_pt', type=str, default="./可使用權重/drop_02_lr_1e-3/weight.pt", help='指定權重繼續訓練，留空為重新訓練。')
+# 資料夾參數
+parser.add_argument('--folder_postfix', type=str, default="test_tranning", help="資料夾後輟名")
+
 param = parser.parse_args()
 kwargs = vars(param)  # param 轉成字典 供後方函數使用
 
@@ -35,11 +42,16 @@ title_str = f'lr:{scientific_lr}_drop:{param.drop}_batch:{param.batch_size}'
 def set_logger(path, log_fname='log.txt'):
 
     logging.basicConfig(filename=pjoin(path, log_fname), level=logging.INFO, force=True)
+    logging.debug(f"command line: {str(sys.argv)}")
+    logging.debug("============ kay args ============")
+    for key, val in kwargs.items():
+        logging.debug("{}, {}".format(key, val))
+    logging.debug("==================================")
     print("log save:", pjoin(path, log_fname))
 
-
-def get_min_lr(lr_list):
+def get_min_lr(lr_log):
     return np.amin(np.array(lr_log))
+
 
 if __name__ == "__main__":
     # --- logger setting
@@ -47,6 +59,19 @@ if __name__ == "__main__":
     current_time = datetime.now()
     fd_postfix = "" if param.folder_postfix == "" else "_"+param.folder_postfix
     save_path = pjoin(log_dir, current_time.strftime('%Y%m%d_%H%M_%S')+fd_postfix)  # 時戳資料夾
+    if param.weight_pt != "":
+        assert os.path.exists(param.weight_pt)
+        save_path += "_reWeighting"  # 表示重新使用舊的 pt
+        logging.info(f"繼續訓練 pt: {param.weight_pt}")
+        while True:
+            _response = str(input("是否繼續訓練 此pt: {}?(y/N)".format(param.weight_pt)))[0]
+            if _response == 'y' or _response == 'Y':
+                break
+            elif _response == 'N':
+                param.weight_pt = ""
+                break
+            else:
+                continue
     os.makedirs(save_path)
     set_logger(save_path, log_fname='log.txt')  # 設定 log 存放位置與 log檔名。
     #
@@ -55,7 +80,7 @@ if __name__ == "__main__":
 
     # QRCode patch 資料夾
     # QRCode_patch_dir_root = './data/pathes_of_qrcode_32x32'  # 裡面參雜一些很不像 QRCode 的patch
-    QRCode_patch_dir_root = './data/manual_pick_QRcode_Patch'
+    QRCode_patch_dir_root = './data/reLabelling_pathes_of_qrcode_32x32'
 
     # 背景 patch 資料夾
     Background_patch_dir_root = './data/background_patch'
@@ -74,6 +99,9 @@ if __name__ == "__main__":
     val_dataloader = DataLoader(val_dataset, batch_size=512, shuffle=True, pin_memory=False)
 
     net = QRCode_CNN(drop=param.drop)  # drop: drop layer.
+    if param.weight_pt != "":
+        print("reloading pt:", param.weight_pt)
+        net.load_state_dict(torch.load(param.weight_pt))
     _train_start = time.perf_counter()
     net, loss, lr_log = train.train(patch_dataloader, net=net, lr=param.lr,
                             epochs=param.epochs, weight=data_weight,

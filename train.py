@@ -8,6 +8,7 @@ from model import QRCode_CNN
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import logging
+from os.path import join as pjoin
 logging.getLogger(__name__)
 import numpy as np
 
@@ -49,6 +50,39 @@ def get_ReduceLROnPlateau(optimizer):
                             eps=1e-8  # 更新前後 的 lr 差距小於此值時候，不更新此次的 lr。default=1e-8
                             )
     return res
+
+def get_min_lr(lr_log):
+    return np.amin(np.array(lr_log))
+
+def draw_loss_and_lr_figure(epochs, lr, loss_train_and_val: list, title_str, save_path, lr_log):
+    assert len(loss_train_and_val) == 2
+    loss_train, loss_val = loss_train_and_val[0], loss_train_and_val[1]
+    # 繪製 loss 圖表
+    plt.figure()
+    plt.xlim(0, epochs)
+    plt.xlabel('epoch')
+    plt.xticks(np.arange(0, epochs, step=5))
+    _ylim_max = np.amax(np.array([loss_train, loss_val]).flatten()) * 1.05
+    plt.ylim(0.0, round(_ylim_max + 0.05, 2))
+    plt.plot(loss_train, label='train')
+    plt.plot(loss_val, label='val')
+    plt.title(title_str)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(pjoin(save_path, 'loss_graph.png'))
+
+    # 繪製 lr 圖表
+    plt.figure()
+    plt.xlim(0, epochs)
+    plt.xlabel('epoch')
+    plt.xticks(np.arange(0, epochs, step=5))
+    plt.ylim(get_min_lr(lr_log) * 0.95, lr * 1.05)
+    plt.yscale("log")
+    plt.plot(lr_log, label='lr')
+    plt.title('learning rate')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(pjoin(save_path, 'learning_rate.png'))
 
 
 def train(dataloader, net, lr, epochs, weight=None,
@@ -115,6 +149,7 @@ def train(dataloader, net, lr, epochs, weight=None,
                     val_cnt += 1
                 _ = val_total_loss / val_cnt
                 eval_loss['val'].append(_)
+                print("\t val loss:", _)
         # end of validation.
         train_loss = running_loss_in_epoch / cnt
         eval_loss['train'].append(train_loss)
@@ -122,11 +157,18 @@ def train(dataloader, net, lr, epochs, weight=None,
         print(f'\repoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
         logging.info(f'epoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
         lr_log.append(current_lr)
+        # draw loss figure
+        loss_train_and_val = [eval_loss['train'], [_.item() for _ in eval_loss['val']]]
+        draw_loss_and_lr_figure(epochs, lr, loss_train_and_val,
+                                "in_training", draw, lr_log)
         scheduler.step(running_loss_in_epoch)
     return net, eval_loss, np.array(lr_log)
 
 
 if __name__ == "__main__":
+    # 參數
+    kwargs = dict()
+    kwargs['reduceLR'] = True
     patches_dataset = PatchesDataset(qrcode_patches_dir='./data/pathes_of_qrcode_32x32',
                                      background_patches_dir='./data/background_patch',
                                      device=device)
@@ -139,7 +181,9 @@ if __name__ == "__main__":
 
     net = QRCode_CNN(drop=0.1)
 
-    net, eval_loss, lr_log = train(train_dataloader, net, lr=1e-4, epochs=2, weight=patches_dataset.weight)
+    net, eval_loss, lr_log = train(train_dataloader, net, lr=1e-4, epochs=2,
+                                   weight=patches_dataset.weight,
+                                   kwargs=kwargs)
     torch.save(net.state_dict(), './trained_e4_ep50.pt')
     val_background_dir="./data/val_patch_False"
     val_qrcode_dir = "./data/val_patch_True"
