@@ -115,13 +115,13 @@ if __name__ == "__main__":
         因為當 QRCode 傾斜 45度時會造成 四邊的 patch 框的不屬於 QRCode """
     # annotations_dir: 都是 txt(yolo註記法)
     # img_dir:圖片，與annotations_dir註記檔案名稱同名ㄟㄟㄟㄟㄟ。
-    # qr_code_dataset = QRCodeDataset(annotations_dir="./data/paper_qr_label_yolo",
-    #                                 img_dir="./data/paper_qr",
-    #                                 predefined_class_file="./data/predefined_classes.txt")
+    qr_code_dataset = QRCodeDataset(annotations_dir="./data/paper_qr_label_yolo",
+                                    img_dir="./data/paper_qr",
+                                    predefined_class_file="./data/predefined_classes.txt")
 
-    qr_code_dataset = QRCodeDataset(annotations_dir="./data/label-qr-code",
-                                    img_dir="./data/raw_qr",
-                                    predefined_class_file="./data/other_dataset_predefined_classes.txt")
+    # qr_code_dataset = QRCodeDataset(annotations_dir="./data/label-qr-code",
+    #                                 img_dir="./data/raw_qr",
+    #                                 predefined_class_file="./data/other_dataset_predefined_classes.txt")
 
     qr_code_patches_save_dir = "./data/pathes_of_qrcode_32x32_otherVer"
     print("32 x 32 patches qrcode dataset 存檔路徑為:{}".format(qr_code_patches_save_dir))
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # range() 內第一個參數可控制從第幾張圖片開始。
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    for data_idx in range(0, len(qr_code_dataset)):
+    for data_idx in range(27, len(qr_code_dataset)):
         data = qr_code_dataset[data_idx]
         c_and_bboxes = data[0]  # class and bounding box
         image = data[1]  # 圖片本身

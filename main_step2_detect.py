@@ -20,9 +20,10 @@ def scalling_img(img: np.ndarray, scale_list=[0.3, 0.5, 0.7]):
     res_dict = dict.fromkeys(scale_list)
     for scale in scale_list:
         re_w, re_h = int(w*scale), int(h*scale)
-        img_gauBr = cv2.GaussianBlur(img, (11, 11), 3)
+        img_gauBr = cv2.GaussianBlur(img, (5, 5), 3)
         # img_bil = cv2.bilateralFilter(img, 9, 75, 75)
         res_dict[scale] = cv2.resize(img_gauBr, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
+        #res_dict[scale] = cv2.resize(img, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
     return res_dict
 
 def get_tensor_batch(dict_muiltiple_images: dict, dict_xyxy: dict, device):
@@ -63,9 +64,11 @@ def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube
 
 
 if __name__ == "__main__":
-    bbox_threshold = 0.7
+    bbox_threshold = 0.99995
+    thick = 2
     # 針對實驗寫迴圈 生出圖片
-    pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    pred_img = cv2.imread("./data/raw_qr/qr_0016.jpg", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     weight_path = "./log_save/20211219_2222_10_使用大於1的權重_bkWeight_3/weight.pt"
     qr_dir = "./data/val_patch_True"
@@ -75,7 +78,8 @@ if __name__ == "__main__":
     net.load_state_dict(torch.load(weight_path))
     net.cuda()
     class_label = ['background', 'QRCode']
-    scale_list = [0.3, 0.5, 0.7, 1.0]  # 這被大量參用
+    #scale_list = [0.2, 0.3, 0.5, 0.75]  # 這被大量參用
+    scale_list = [0.3, 0.4, 0.5, 0.6]  # 這被大量參用
     use_0_1 = True  # param
     # 存放著 不同 scale 的 src image.
     multiple_scalling_imgs = scalling_img(pred_img, scale_list=scale_list)
@@ -160,18 +164,11 @@ if __name__ == "__main__":
               )
     # 將預測的 bbox 繪製到多尺度的圖片上
     with_bbox_multi_images = []  # 存放被畫上 bbox 的 multiple scaling images
-    # 各 scalling 的座標點
-    # for scale_val, xyxy_s in pick_xyxy_dict.items():
-    #     image = multiple_scalling_imgs[scale_val]
-    #     image_ = np.array(image)
-    #     for xyxy in xyxy_s:  # xyxy_s = 多個座標組
-    #         cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=1)
-    #     with_bbox_multi_images.append(image_)
     for scale_val in scale_list:
         image = multiple_scalling_imgs[scale_val]
         image_ = np.array(image)
         for xyxy in pick_xyxy_dict[scale_val]:
-            cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=1)
+            cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=thick)
         with_bbox_multi_images.append(image_)
 
     # === plt show param setting
@@ -193,7 +190,9 @@ if __name__ == "__main__":
         # axi.set_title("Row:" + str(rowid) + ", Col:" + str(colid))
         axi.set_title(f"Scale: {str(scale_list[i])}")
     plt.tight_layout()
+    plt.savefig('detection.png')
     plt.show()
+
 
     # =============== 計算 loss
     # with torch.no_grad():
