@@ -1,0 +1,120 @@
+INFO:root:command line: D:/git-repo/zjpj/main_step1_train.py
+INFO:root:============ kay args ============
+INFO:root:epochs, 50
+INFO:root:lr, 0.001
+INFO:root:drop, 0.2
+INFO:root:batch_size, 32
+INFO:root:reduceLR, True
+INFO:root:weight_pt, 
+INFO:root:folder_postfix, 
+INFO:root:log_dir, log_save
+INFO:root:==================================
+INFO:root:device: cuda
+INFO:root:batch_size: 32
+INFO:root:drop: 0.2
+INFO:root:lr: 0.001
+INFO:root:epochs: 50
+INFO:root:===================================
+INFO:root:epoch: 1, loss: 0.1941774524680159, lr: 0.001
+INFO:root:epoch: 2, loss: 0.15396851514383456, lr: 0.001
+INFO:root:epoch: 3, loss: 0.15053294133139333, lr: 0.001
+INFO:root:epoch: 4, loss: 0.15099934057212433, lr: 0.001
+INFO:root:epoch: 5, loss: 0.15053481331533067, lr: 0.001
+INFO:root:epoch: 6, loss: 0.1499550204676357, lr: 0.001
+INFO:root:epoch: 7, loss: 0.14948980225299546, lr: 0.001
+INFO:root:epoch: 8, loss: 0.14938824389501384, lr: 0.001
+INFO:root:epoch: 9, loss: 0.14935856739745867, lr: 0.001
+INFO:root:epoch: 10, loss: 0.14904930807091124, lr: 0.001
+INFO:root:epoch: 11, loss: 0.14880996974899152, lr: 0.001
+INFO:root:epoch: 12, loss: 0.1481499348844641, lr: 0.001
+INFO:root:epoch: 13, loss: 0.14779642079799196, lr: 0.001
+INFO:root:epoch: 14, loss: 0.14666877410903723, lr: 0.001
+INFO:root:epoch: 15, loss: 0.14420789463167766, lr: 0.001
+INFO:root:epoch: 16, loss: 0.14096736314400607, lr: 0.001
+INFO:root:epoch: 17, loss: 0.13546218654040285, lr: 0.001
+INFO:root:epoch: 18, loss: 0.12247145714107066, lr: 0.001
+INFO:root:epoch: 19, loss: 0.1061334184005393, lr: 0.001
+INFO:root:epoch: 20, loss: 0.09397687158255079, lr: 0.001
+INFO:root:epoch: 21, loss: 0.09033648469736706, lr: 0.001
+INFO:root:epoch: 22, loss: 0.08748599028850464, lr: 0.001
+INFO:root:epoch: 23, loss: 0.0852465111070397, lr: 0.001
+INFO:root:epoch: 24, loss: 0.08157634875317056, lr: 0.001
+INFO:root:epoch: 25, loss: 0.07988569514837869, lr: 0.001
+INFO:root:epoch: 26, loss: 0.07993338766319495, lr: 0.001
+INFO:root:epoch: 27, loss: 0.07618206560233402, lr: 0.001
+INFO:root:epoch: 28, loss: 0.07741258435687502, lr: 0.001
+INFO:root:epoch: 29, loss: 0.0754833395643141, lr: 0.001
+INFO:root:epoch: 30, loss: 0.07628440170626395, lr: 0.001
+INFO:root:epoch: 31, loss: 0.07304391122192198, lr: 0.001
+INFO:root:epoch: 32, loss: 0.07654473774368582, lr: 0.001
+INFO:root:epoch: 33, loss: 0.07130597382830754, lr: 0.001
+INFO:root:epoch: 34, loss: 0.07339776042965561, lr: 0.001
+INFO:root:epoch: 35, loss: 0.0718734683298522, lr: 0.001
+INFO:root:epoch: 36, loss: 0.07071281345569667, lr: 0.001
+INFO:root:epoch: 37, loss: 0.0695484360185352, lr: 0.001
+INFO:root:epoch: 38, loss: 0.07121887856311346, lr: 0.001
+INFO:root:epoch: 39, loss: 0.06891820542786989, lr: 0.001
+INFO:root:epoch: 40, loss: 0.06861484089328619, lr: 0.001
+INFO:root:epoch: 41, loss: 0.06827400905320426, lr: 0.001
+INFO:root:epoch: 42, loss: 0.06856711322019066, lr: 0.001
+INFO:root:epoch: 43, loss: 0.06885826995759037, lr: 0.001
+INFO:root:epoch: 44, loss: 0.06461123879577144, lr: 0.001
+INFO:root:epoch: 45, loss: 0.06459569076938028, lr: 0.001
+INFO:root:epoch: 46, loss: 0.06429090573972607, lr: 0.001
+INFO:root:epoch: 47, loss: 0.06450912942564539, lr: 0.001
+INFO:root:epoch: 48, loss: 0.06301876787421756, lr: 0.001
+INFO:root:epoch: 49, loss: 0.06269169035817139, lr: 0.001
+INFO:root:epoch: 50, loss: 0.06269929636504555, lr: 0.001
+INFO:root:lr rate dynamic:
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:  lr: 0.001
+INFO:root:Begin train: 12/19 17:41:41
+INFO:root:cost time: 0 days 00:12:51
