@@ -58,9 +58,11 @@ def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube
 
 if __name__ == "__main__":
     # 針對實驗寫迴圈 生出圖片
-    pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    # "./data/paper_qr/File 088.bmp"
+    #
+    pred_img = cv2.imread("./data/raw_qr/qr_0001.jpg", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20211210_0021_00_第二次實驗/weight.pt"
+    weight_path = "./log_save/20211219_1607_34_1000test/weight_179.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
@@ -116,7 +118,8 @@ if __name__ == "__main__":
         for idx, xyxy in enumerate(multiple_patch_xyxy_2st[scale_val]):
             if idx in pick_idx:
                 print("預測機率+入:", all_pred_pr[idx])
-                pick_xyxy_dict[scale_val].append(xyxy)
+                if all_pred_pr[idx] >= 1.0:
+                    pick_xyxy_dict[scale_val].append(xyxy)
 
     # 將預測的 bbox 繪製到多尺度的圖片上
     with_bbox_multi_images = []  # 存放被畫上 bbox 的 multiple scaling images
