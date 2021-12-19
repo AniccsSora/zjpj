@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import logging
 from os.path import join as pjoin
+import os
 logging.getLogger(__name__)
 import numpy as np
 
@@ -43,9 +44,9 @@ def get_ReduceLROnPlateau(optimizer):
                             factor=0.1,  # new_lr = old_lr * factor 的意思。default=0.1
                             patience=5,  # 可以忍受幾個 eopches 不下降
                             verbose=True,  # 下降時是否提示
-                            threshold=1e-3,  # 小數點第幾位當成變化閥值?default: 1e-4
+                            threshold=1e-4,  # 小數點第幾位當成變化閥值?default: 1e-4
                             threshold_mode='rel',  # default: rel
-                            min_lr=1e-7,  # 最小的學習率。default=1e-4
+                            min_lr=1e-6,  # 最小的學習率。default=1e-4
                             cooldown=0,  # 觸發更新條件後，等待幾個epoches 再監視。default=0
                             eps=1e-8  # 更新前後 的 lr 差距小於此值時候，不更新此次的 lr。default=1e-8
                             )
@@ -61,7 +62,7 @@ def draw_loss_and_lr_figure(epochs, lr, loss_train_and_val: list, title_str, sav
     plt.figure()
     plt.xlim(0, epochs)
     plt.xlabel('epoch')
-    plt.xticks(np.arange(0, epochs, step=5))
+    plt.xticks(np.arange(0, epochs, step=epochs//10))
     _ylim_max = np.amax(np.array([loss_train, loss_val]).flatten()) * 1.05
     plt.ylim(0.0, round(_ylim_max + 0.05, 2))
     plt.plot(loss_train, label='train')
@@ -70,12 +71,13 @@ def draw_loss_and_lr_figure(epochs, lr, loss_train_and_val: list, title_str, sav
     plt.legend()
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'loss_graph.png'))
+    plt.close('all')
 
     # 繪製 lr 圖表
     plt.figure()
     plt.xlim(0, epochs)
     plt.xlabel('epoch')
-    plt.xticks(np.arange(0, epochs, step=5))
+    plt.xticks(np.arange(0, epochs, step=epochs//10))
     plt.ylim(get_min_lr(lr_log) * 0.95, lr * 1.05)
     plt.yscale("log")
     plt.plot(lr_log, label='lr')
@@ -83,7 +85,7 @@ def draw_loss_and_lr_figure(epochs, lr, loss_train_and_val: list, title_str, sav
     plt.legend()
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'learning_rate.png'))
-
+    plt.close('all')
 
 def train(dataloader, net, lr, epochs, weight=None,
           class_name=['background', 'QRCode'],
@@ -110,8 +112,12 @@ def train(dataloader, net, lr, epochs, weight=None,
         print("Dataset weight:", weight)
         logging.info("\rUse dataset weight to train.")
         logging.info("\rDataset weight: {}".format(weight))
-        # 注意: 跟label相反，label:0 -> 背景， label:1 -> QRCode，所以權重將是倒數。
-        weight = torch.tensor([weight['QRCode'], weight['background']]).to(device)
+        # 注意: 跟label相反，label:0 -> 背景， label:1 -> QRCode，所以權重將是相反。
+        QR_code_weight = 1.0
+        background_weight = 1.0
+        weight = torch.tensor([weight['QRCode'] * QR_code_weight,
+                               weight['background'] * background_weight
+                               ]).to(device)
 
     criterion = nn.CrossEntropyLoss(weight=weight)
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
@@ -138,6 +144,9 @@ def train(dataloader, net, lr, epochs, weight=None,
             # ---
             running_loss_in_epoch += loss.item()
             cnt += 1
+        torch.save(net.state_dict(), f"{draw}/weight_{epoch+1}.pt")
+        if os.path.exists(f"{draw}/weight_{epoch}.pt"):
+            os.remove(f"{draw}/weight_{epoch}.pt")
         if val_dataloader is not None:
             with torch.no_grad():
                 val_total_loss = 0.0
@@ -149,7 +158,7 @@ def train(dataloader, net, lr, epochs, weight=None,
                     val_cnt += 1
                 _ = val_total_loss / val_cnt
                 eval_loss['val'].append(_)
-                print("\t val loss:", _)
+                print("\t val loss:", _.item())
         # end of validation.
         train_loss = running_loss_in_epoch / cnt
         eval_loss['train'].append(train_loss)
