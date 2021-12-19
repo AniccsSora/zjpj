@@ -115,9 +115,12 @@ def train(dataloader, net, lr, epochs, weight=None,
         # 注意: 跟label相反，label:0 -> 背景， label:1 -> QRCode，所以權重將是相反。
         QR_code_weight = 1.0
         background_weight = 1.0
-        weight = torch.tensor([weight['QRCode'] * QR_code_weight,
-                               weight['background'] * background_weight
-                               ]).to(device)
+        # weight = torch.tensor([weight['QRCode'] * QR_code_weight,
+        #                        weight['background'] * background_weight
+        #                        ]).to(device)
+        weight = torch.tensor([1. / weight['background'],  # if label:0 的資料占比 為 0.97
+                               1. / weight['QRCode']  # if label:1 的資料占比 為 0.03，
+                               ]).to(device)          # 則最後得到的權重 1.03 : 33.33
 
     criterion = nn.CrossEntropyLoss(weight=weight)
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)

@@ -28,7 +28,7 @@ parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLR
 # 權重檔案是否指定
 parser.add_argument('--weight_pt', type=str, default="", help='指定權重繼續訓練，留空為重新訓練。')
 # 資料夾參數
-parser.add_argument('--folder_postfix', type=str, default="", help="資料夾後輟名")
+parser.add_argument('--folder_postfix', type=str, default="使用大於1的權重", help="資料夾後輟名")
 parser.add_argument('--log_dir', type=str, default="log_save", help="存放資料夾名")
 
 param = parser.parse_args()

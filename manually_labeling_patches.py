@@ -108,6 +108,8 @@ def get_32x32_boxes(img, c_and_bboxes, overlap=0.5):
 
 
 if __name__ == "__main__":
+    # 預設為: 0，可決定從哪一張圖片開始標記
+    start_idx = 124
     # 使用此程式前需要準備下二資料夾，內部已經存放好資料:
     # 1. QRCodes 資料夾 (多張圖片)
     # 2. 提供另外一個資料夾路徑，其內部只包含對應名稱的 label 資訊 (使用 yolo format)
@@ -128,7 +130,8 @@ if __name__ == "__main__":
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # range() 內第一個參數可控制從第幾張圖片開始。
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    for data_idx in range(9, len(qr_code_dataset)):
+    assert start_idx-1 < len(qr_code_dataset)
+    for data_idx in range(122, len(qr_code_dataset)):
         data = qr_code_dataset[data_idx]
         c_and_bboxes = data[0]  # class and bounding box
         image = data[1]  # 圖片本身
