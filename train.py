@@ -113,10 +113,16 @@ def train(dataloader, net, lr, epochs, weight=None,
         logging.info("\rUse dataset weight to train.")
         logging.info("\rDataset weight: {}".format(weight))
         # 注意: 跟label相反，label:0 -> 背景， label:1 -> QRCode，所以權重將是相反。
-        QR_code_weight = 1.0
-        background_weight = 1.0
-        weight = torch.tensor([weight['QRCode'] * QR_code_weight,
-                               weight['background'] * background_weight
+        QR_code_weight = kwargs['qrcode_dataset_weight']
+        background_weight = kwargs['background_dataset_weight']
+        # weight = torch.tensor([weight['QRCode'] * QR_code_weight,
+        #                        weight['background'] * background_weight
+        #                        ]).to(device)
+        # if label:0 的資料占比 為 0.97 較多
+        # if label:1 的資料占比 為 0.03，較少
+        # 則最後得到的權重 1.03 : 33.33  -> 權重平衡。占比較多的資料全重較低。
+        weight = torch.tensor([(1. / weight['background']) * background_weight,
+                               (1. / weight['QRCode']) * QR_code_weight
                                ]).to(device)
 
     criterion = nn.CrossEntropyLoss(weight=weight)

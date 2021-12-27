@@ -118,7 +118,12 @@ if __name__ == "__main__":
     qr_code_dataset = QRCodeDataset(annotations_dir="./data/paper_qr_label_yolo",
                                     img_dir="./data/paper_qr",
                                     predefined_class_file="./data/predefined_classes.txt")
-    qr_code_patches_save_dir = "./data/reLabelling_pathes_of_qrcode_32x32"
+
+    # qr_code_dataset = QRCodeDataset(annotations_dir="./data/label-qr-code",
+    #                                 img_dir="./data/raw_qr",
+    #                                 predefined_class_file="./data/other_dataset_predefined_classes.txt")
+
+    qr_code_patches_save_dir = "./data/pathes_of_qrcode_32x32_otherVer"
     print("32 x 32 patches qrcode dataset 存檔路徑為:{}".format(qr_code_patches_save_dir))
     save_name_cnt = 1
     os.makedirs(qr_code_patches_save_dir, exist_ok=True)
@@ -128,7 +133,7 @@ if __name__ == "__main__":
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # range() 內第一個參數可控制從第幾張圖片開始。
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    for data_idx in range(9, len(qr_code_dataset)):
+    for data_idx in range(27, len(qr_code_dataset)):
         data = qr_code_dataset[data_idx]
         c_and_bboxes = data[0]  # class and bounding box
         image = data[1]  # 圖片本身

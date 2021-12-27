@@ -23,6 +23,8 @@ parser.add_argument('--epochs', type=int, default=50, help='訓練週期次數')
 parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dropout率')
 parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
+parser.add_argument('--background_dataset_weight', type=float, default=1.5, help='背景圖片的的資料占比加權平衡後乘上的數字')
+parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qrcode的資料占比加權平衡後乘上的數字')
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
 parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
@@ -113,7 +115,7 @@ if __name__ == "__main__":
     _train_start = time.perf_counter()
     net, loss, lr_log = train.train(patch_dataloader, net=net, lr=param.lr,
                             epochs=param.epochs,
-                            weight=None, #data_weight,  # 資料量平衡  使用
+                            weight=data_weight,
                             draw=save_path,
                             val_dataloader=val_dataloader, kwargs=kwargs)
     _train_finish = time.perf_counter()
@@ -151,13 +153,12 @@ if __name__ == "__main__":
     plt.savefig(pjoin(save_path, 'learning_rate.png'))
     plt.close('all')
 
-    logging.info("lr rate dynamic:")
-    for lr in lr_log.tolist():
-        logging.info(f"  lr: {lr}")
+    # logging.info("lr rate dynamic:")
+    # for lr in lr_log.tolist():
+    #     logging.info(f"  lr: {lr}")
     _cost_t_time = _train_finish - _train_start
     _cost_t_time = str(pd.to_timedelta(timedelta(seconds=_cost_t_time))).split('.')[0]
     print(f"Begin train: {current_time.strftime('%m/%d %H:%M:%S')}")
     print("cost:", _cost_t_time)
     logging.info(f"Begin train: {current_time.strftime('%m/%d %H:%M:%S')}")
     logging.info(f"cost time: {_cost_t_time}")
-
