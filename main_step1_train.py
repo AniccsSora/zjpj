@@ -23,6 +23,7 @@ parser.add_argument('--epochs', type=int, default=50, help='訓練週期次數')
 parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dropout率')
 parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
+parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
 parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
 # 權重檔案是否指定
@@ -37,6 +38,12 @@ kwargs = vars(param)  # param 轉成字典 供後方函數使用
 # 浮點數轉科學記號
 scientific_lr = "{:.0e}".format(param.lr)
 title_str = f'lr:{scientific_lr}_drop:{param.drop}_batch:{param.batch_size}'
+
+# 設定隨機種子
+if param.seed is not None:
+    torch.manual_seed(param.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(param.seed)
 
 # --- logger setting
 def set_logger(path, log_fname='log.txt'):
@@ -105,7 +112,8 @@ if __name__ == "__main__":
         net.load_state_dict(torch.load(param.weight_pt))
     _train_start = time.perf_counter()
     net, loss, lr_log = train.train(patch_dataloader, net=net, lr=param.lr,
-                            epochs=param.epochs, weight=data_weight,
+                            epochs=param.epochs,
+                            weight=None, #data_weight,  # 資料量平衡  使用
                             draw=save_path,
                             val_dataloader=val_dataloader, kwargs=kwargs)
     _train_finish = time.perf_counter()
@@ -152,3 +160,4 @@ if __name__ == "__main__":
     print("cost:", _cost_t_time)
     logging.info(f"Begin train: {current_time.strftime('%m/%d %H:%M:%S')}")
     logging.info(f"cost time: {_cost_t_time}")
+
