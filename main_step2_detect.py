@@ -10,6 +10,7 @@ from little_function import cutting_cube, cutting_cube_include_surplus
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
+from merge_bbx import merge_bboxes
 os.environ['KMP_DUPLICATE_LIB_OK']='True'  # 暫且安捏
 parser = argparse.ArgumentParser("main2 參數設定")
 # parser.add_argument("--")
@@ -63,12 +64,20 @@ def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube
     return res_dict
 
 
+def detection(image):
+    pass
+
+
 if __name__ == "__main__":
-    bbox_threshold = 0.99995
+    bbox_threshold = 0.9995
     thick = 2
+    overlap = 0.1  # 切割精細度
+    # merge 策略 (float)
+    merge_delta_x = 0.05
+    merge_delta_y = 0.05
     # 針對實驗寫迴圈 生出圖片
-    #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
-    pred_img = cv2.imread("./data/raw_qr/qr_0016.jpg", cv2.IMREAD_GRAYSCALE)
+    pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/raw_qr/qr_0016.jpg", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     weight_path = "./log_save/20211219_2222_10_使用大於1的權重_bkWeight_3/weight.pt"
     qr_dir = "./data/val_patch_True"
@@ -86,7 +95,7 @@ if __name__ == "__main__":
     # 不同 scale 的 32x32 xyxy。
     multiple_patch_xyxy = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
                                              cube_size=32,
-                                             overlap=1.0)
+                                             overlap=overlap)
 
     # predict 紀錄
     predict_dict = dict.fromkeys(scale_list)
@@ -118,10 +127,13 @@ if __name__ == "__main__":
 
     # 各scalling 有選到的座標
     pick_xyxy_dict = dict.fromkeys(scale_list, None)
-    # 因為用生成器所以必須這樣再一次init
-    multiple_patch_xyxy_2st = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
-                                             cube_size=32,
-                                             overlap=1.0)
+
+    # 12/31 棄用: 因為用生成器所以必須這樣再一次init
+    # multiple_patch_xyxy_2st = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
+    #                                          cube_size=32,
+    #                                          overlap=1.0)
+
+
     # debug，紀錄各尺度篩出來的 Qrcode數量
     qrcode_bbox_cnt_dict = dict().fromkeys(scale_list, 0)
     # debug，紀錄為 qrcode 預選框的數量，要再進一步篩選過低期望的數值。
@@ -164,12 +176,21 @@ if __name__ == "__main__":
               )
     # 將預測的 bbox 繪製到多尺度的圖片上
     with_bbox_multi_images = []  # 存放被畫上 bbox 的 multiple scaling images
+    with_merged_bbox_multi_images = []  # 存放被 merge 過的 bbox 的 multiple scaling images
     for scale_val in scale_list:
         image = multiple_scalling_imgs[scale_val]
-        image_ = np.array(image)
+        image_ = np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
+        image_m_ = np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))#np.array(image)
+        # 一五一十地畫出來
         for xyxy in pick_xyxy_dict[scale_val]:
             cv2.rectangle(image_, xyxy[0:2], xyxy[2:], color=(255, 0, 0), thickness=thick)
+        # 要繪製之前 先 merge
+        for xyxy in merge_bboxes(pick_xyxy_dict[scale_val],
+                                 delta_x=merge_delta_x,
+                                 delta_y=merge_delta_y):
+            cv2.rectangle(image_m_, xyxy[0:2], xyxy[2:], color=(0, 255, 0), thickness=thick)
         with_bbox_multi_images.append(image_)
+        with_merged_bbox_multi_images.append(image_m_)
 
     # === plt show param setting
     mpl.rcParams["figure.dpi"] = 120  # default: 100
@@ -191,7 +212,27 @@ if __name__ == "__main__":
         axi.set_title(f"Scale: {str(scale_list[i])}")
     plt.tight_layout()
     plt.savefig('detection.png')
+    # plt.show()
+
+
+    # 繪製 merge bbox 版本
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+    fig.canvas.manager.set_window_title("多尺度預測結果_結合 bbox 版")
+    for i, axi in enumerate(ax.flat):
+        # i runs from 0 to (nrows*ncols-1)
+        # axi is equivalent with ax[rowid][colid]
+        img = with_merged_bbox_multi_images[i]
+        axi.imshow(img, alpha=1.0, cmap=plt.get_cmap('gray'))
+        # get indices of row/column
+        rowid = i // ncols
+        colid = i % ncols
+        # 將 行/列索引 寫為軸的標題以供識別
+        # axi.set_title("Row:" + str(rowid) + ", Col:" + str(colid))
+        axi.set_title(f"Scale: {str(scale_list[i])}")
+    plt.tight_layout()
+    plt.savefig('detection_merge_ver.png')
     plt.show()
+
 
 
     # =============== 計算 loss
