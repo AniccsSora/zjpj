@@ -25,12 +25,13 @@ parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dr
 parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
 parser.add_argument('--background_dataset_weight', type=float, default=1.5, help='背景圖片的的資料占比加權平衡後乘上的數字')
 parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qrcode的資料占比加權平衡後乘上的數字')
+parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
 parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
 # 權重檔案是否指定
 parser.add_argument('--weight_pt', type=str, default="", help='指定權重繼續訓練，留空為重新訓練。')
 # 資料夾參數
-parser.add_argument('--folder_postfix', type=str, default="使用大於1的權重_bkWeight_1-5", help="資料夾後輟名")
+parser.add_argument('--folder_postfix', type=str, default="", help="資料夾後輟名")
 parser.add_argument('--log_dir', type=str, default="log_save", help="存放資料夾名")
 
 param = parser.parse_args()
@@ -39,6 +40,12 @@ kwargs = vars(param)  # param 轉成字典 供後方函數使用
 # 浮點數轉科學記號
 scientific_lr = "{:.0e}".format(param.lr)
 title_str = f'lr:{scientific_lr}_drop:{param.drop}_batch:{param.batch_size}'
+
+# 設定隨機種子
+if param.seed is not None:
+    torch.manual_seed(param.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(param.seed)
 
 # --- logger setting
 def set_logger(path, log_fname='log.txt'):
@@ -107,7 +114,8 @@ if __name__ == "__main__":
         net.load_state_dict(torch.load(param.weight_pt))
     _train_start = time.perf_counter()
     net, loss, lr_log = train.train(patch_dataloader, net=net, lr=param.lr,
-                            epochs=param.epochs, weight=data_weight,
+                            epochs=param.epochs,
+                            weight=data_weight,
                             draw=save_path,
                             val_dataloader=val_dataloader, kwargs=kwargs)
     _train_finish = time.perf_counter()
