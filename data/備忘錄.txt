@@ -1,0 +1,9 @@
+paper_qr_label_yolo: 存放著 "paper_qr" 資料夾下圖片的 yolo格式
+                     標記txt。
+
+
+# 啟動標記器的語法
+python labelImg.py [-h] [image_dir] [class_file] [save_dir]
+
+# 標記 現實生活 qrcode
+python labelImg.py "D:\Git\zjpj\data\raw_qr" "./data/predefined_classes.txt" "D:\Git\zjpj\data\raw_qr_yolo_label"
