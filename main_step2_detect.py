@@ -63,14 +63,32 @@ def get_xyxy_generator_dict(scale_list: list, multiple_scalling_imgs: dict, cube
         res_dict[scale_val] = cutting_cube_include_surplus((w, h), cube_size, overlap)
     return res_dict
 
-
-def detection(image):
-    pass
+def determine_new_p(p_list, percentile, bigger_1_reduce_percentile=1):
+    """
+    @param p_list: 預測框的所有機率
+    @param percentile: 要取的百分位數
+    @return: 估計最佳閥值
+    """
+    res = None
+    p_list = p_list[p_list > 0.5]  # 閥值大於 0.5 才會被取用
+    if len(p_list[p_list <= 0.5]) == 0:
+        print(f'[debug]: 過濾閥值均大於 0.5')
+    else:
+        print(f'[debug]: 過濾閥值 "沒有" 均大於 0.5')
+    res = np.percentile(p_list, percentile)
+    while res >= 1.0:
+        percentile -= 1
+        res = np.percentile(p_list, percentile)
+    print(f'更新閥值為: {res}, 使用 {percentile} 百分位值')
+    return res, percentile
 
 
 if __name__ == "__main__":
-    bbox_threshold = 0.80
-    thick = 1
+    bbox_threshold = 0.995  # 0.99999995
+    auto_thres = True  # False=使用固定閥值
+    percentile_pick = 95  # 動態閥值的取的百分位數
+
+    thick = 2
     overlap = 0.3  # 切割精細度
     # merge 策略 (float)
     merge_delta_x = 0.01
@@ -78,8 +96,9 @@ if __name__ == "__main__":
     # 針對實驗寫迴圈 生出圖片
     #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
     pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20220116_0054_04_reWeighting/weight.pt"
+    weight_path = "./log_save/20220116_1058_54/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
@@ -128,18 +147,16 @@ if __name__ == "__main__":
     # 各scalling 有選到的座標
     pick_xyxy_dict = dict.fromkeys(scale_list, None)
 
-    # 12/31 棄用: 因為用生成器所以必須這樣再一次init
-    # multiple_patch_xyxy_2st = get_xyxy_generator_dict(scale_list, multiple_scalling_imgs,
-    #                                          cube_size=32,
-    #                                          overlap=1.0)
-
-
     # debug，紀錄各尺度篩出來的 Qrcode數量
     qrcode_bbox_cnt_dict = dict().fromkeys(scale_list, 0)
     # debug，紀錄為 qrcode 預選框的數量，要再進一步篩選過低期望的數值。
     preselection_number_dict = dict().fromkeys(scale_list, 0)
     # debug，被剔除預選框的數量
     non_select_number_dict = dict().fromkeys(scale_list, 0)
+    # debug，紀錄最後採用的百分位值 (百分位)
+    percent_pick_dict = dict().fromkeys(scale_list, 0)
+    # debug，紀錄最後採用的百分位值閥值 (使用的預測機率)
+    percent_pick_predictP_dict = dict().fromkeys(scale_list, 0)
 
     # 有了 pred_label 了 接下來將屬於 (1 class, QRCode)的座標篩出來
     for scale_val, pred_c in pred_label_dict.items():
@@ -151,19 +168,32 @@ if __name__ == "__main__":
         preselection_number_dict[scale_val] = len(qr_label_indices)
         # 拿出他的 xyxy
         _xyxy_tmp_ = []
+        # 決定是否使用自動閥值
+        if auto_thres:
+            bbox_threshold, percent_pick = determine_new_p(all_pred_pr, percentile_pick)
+            print(f"{scale_val} use NEW THRESHOLD {bbox_threshold}, "
+                  f"determine from {percent_pick} ppercentile.")
+            print("===============================================")
+            percent_pick_dict[scale_val] = percent_pick  # 使用的百分位數
+            percent_pick_predictP_dict[scale_val] = bbox_threshold  # 百分位數對應的閥值
+        # 自動篩選 threshold 完畢
+
         for is_qr_idx in qr_label_indices:
             _p = all_pred_pr[is_qr_idx]  # 期望值
             if _p > bbox_threshold:
                 # pred_patch_xyxy_dict[scale_val] : scale_val尺度下，被切出的所有 32x32 座標
                 xyxy = pred_patch_xyxy_dict[scale_val][is_qr_idx]
                 _xyxy_tmp_.append(xyxy)
-                print("預測機率加入:", _p)
+                #print("預測機率加入:", _p)
                 qrcode_bbox_cnt_dict[scale_val] += 1
             else:
-                print("不加入:", _p)
+                #print("不加入:", _p)
                 non_select_number_dict[scale_val] += 1
+        # 上方 for-loop 篩選不符合資格的 bbox 完畢
+
         # 篩掉期望值不夠的 bbox
         pick_xyxy_dict[scale_val] = _xyxy_tmp_
+    print("===============================================")
 
     # debug :
     for scale in scale_list:
@@ -210,7 +240,14 @@ if __name__ == "__main__":
         colid = i % ncols
         # 將 行/列索引 寫為軸的標題以供識別
         # axi.set_title("Row:" + str(rowid) + ", Col:" + str(colid))
-        axi.set_title(f"Scale: {str(scale_list[i])}")
+        if auto_thres:
+            # 使用動態thres 需要印出更詳細數值
+            cur_scale = scale_list[i]
+            _percentile = str(percent_pick_dict[cur_scale])  # 使用的百分位數
+            _thres_P = str(percent_pick_predictP_dict[cur_scale])  # 百分位數對應的閥值
+            axi.set_title(f"Scale: {str(cur_scale)}, percentile:({_percentile})={_thres_P}")
+        else:
+            axi.set_title(f"Scale: {str(scale_list[i])}")
     plt.tight_layout()
     plt.savefig('detection.png')
     # plt.show()
@@ -230,7 +267,14 @@ if __name__ == "__main__":
         colid = i % ncols
         # 將 行/列索引 寫為軸的標題以供識別
         # axi.set_title("Row:" + str(rowid) + ", Col:" + str(colid))
-        axi.set_title(f"Scale: {str(scale_list[i])}")
+        if auto_thres:
+            # 使用動態thres 需要印出更詳細數值
+            cur_scale = scale_list[i]
+            _percentile = str(percent_pick_dict[cur_scale])  # 使用的百分位數
+            _thres_P = str(percent_pick_predictP_dict[cur_scale])  # 百分位數對應的閥值
+            axi.set_title(f"Scale: {str(cur_scale)}, percentile:({_percentile})={_thres_P}")
+        else:
+            axi.set_title(f"Scale: {str(scale_list[i])}")
     plt.tight_layout()
     plt.savefig('detection_merge_ver.png')
     plt.show()
