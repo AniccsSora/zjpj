@@ -10,10 +10,10 @@ if __name__ == "__main__":
     """
     拆出 background patch.
     """
-    qr_code_dataset = QRCodeDataset(annotations_dir="./data/paper_qr_label_yolo",
-                                    img_dir="./data/paper_qr",
+    qr_code_dataset = QRCodeDataset(annotations_dir="./data/raw_qr_yolo_label",
+                                    img_dir="./data/raw_qr",
                                     predefined_class_file="./data/predefined_classes.txt")
-    background_patch_saveDir = "./data/background_patch"
+    background_patch_saveDir = "./data/background_patch_real_world"
 
     # range 可以控制從哪一張圖片開始跑
     for image_idx in tqdm(range(0, len(qr_code_dataset))):

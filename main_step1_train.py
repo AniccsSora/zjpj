@@ -23,7 +23,7 @@ parser.add_argument('--epochs', type=int, default=50, help='訓練週期次數')
 parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dropout率')
 parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
-parser.add_argument('--background_dataset_weight', type=float, default=1.5, help='背景圖片的的資料占比加權平衡後乘上的數字')
+parser.add_argument('--background_dataset_weight', type=float, default=1.0, help='背景圖片的的資料占比加權平衡後乘上的數字')
 parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qrcode的資料占比加權平衡後乘上的數字')
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
@@ -90,10 +90,10 @@ if __name__ == "__main__":
 
     # QRCode patch 資料夾
     # QRCode_patch_dir_root = './data/pathes_of_qrcode_32x32'  # 裡面參雜一些很不像 QRCode 的patch
-    QRCode_patch_dir_root = './data/manual_pick_QRcode_Patch'
+    QRCode_patch_dir_root = "./data/!new_merge_qr_patch"  # './data/manual_pick_QRcode_Patch'
 
     # 背景 patch 資料夾
-    Background_patch_dir_root = './data/background_patch'
+    Background_patch_dir_root = "./data/!new_merge_background"  # './data/background_patch'
 
     patches_dataset = PatchesDataset(qrcode_patches_dir=QRCode_patch_dir_root,
                                      background_patches_dir=Background_patch_dir_root,

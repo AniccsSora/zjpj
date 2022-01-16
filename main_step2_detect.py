@@ -69,17 +69,17 @@ def detection(image):
 
 
 if __name__ == "__main__":
-    bbox_threshold = 0.9995
-    thick = 2
-    overlap = 0.1  # 切割精細度
+    bbox_threshold = 0.80
+    thick = 1
+    overlap = 0.3  # 切割精細度
     # merge 策略 (float)
-    merge_delta_x = 0.05
-    merge_delta_y = 0.05
+    merge_delta_x = 0.01
+    merge_delta_y = 0.01
     # 針對實驗寫迴圈 生出圖片
-    pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
-    #pred_img = cv2.imread("./data/raw_qr/qr_0016.jpg", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20211219_2222_10_使用大於1的權重_bkWeight_3/weight.pt"
+    weight_path = "./log_save/20220116_0054_04_reWeighting/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
@@ -199,6 +199,7 @@ if __name__ == "__main__":
     # create figure (fig), and array of axes (ax)
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     fig.canvas.manager.set_window_title("多尺度預測結果")
+    fig.suptitle('QR-Patch prediction result', fontsize=12)
     for i, axi in enumerate(ax.flat):
         # i runs from 0 to (nrows*ncols-1)
         # axi is equivalent with ax[rowid][colid]
@@ -218,6 +219,7 @@ if __name__ == "__main__":
     # 繪製 merge bbox 版本
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     fig.canvas.manager.set_window_title("多尺度預測結果_結合 bbox 版")
+    fig.suptitle('Merge BBox result', fontsize=12)
     for i, axi in enumerate(ax.flat):
         # i runs from 0 to (nrows*ncols-1)
         # axi is equivalent with ax[rowid][colid]
