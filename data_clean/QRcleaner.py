@@ -70,14 +70,26 @@ class QRCleaner:
         os.makedirs(dist_dir, exist_ok=True)
 
         _ = [_ for _ in src_dir.rglob('*.*')]
-
+        _ = _[754:]
         zxing_decoder = ZxingDecoder()
+
+        error_log = "error_detect_log.txt"
+        if os.path.exists(error_log):
+            os.remove(error_log)
 
         pbar = tqdm.tqdm(range(len(_)))
         for idx in pbar:
             ipath = _[idx]
-            img = Image.open(ipath)
-            results1 = zb_decoder(img)
+            try:
+                print(ipath)
+                img = Image.open(ipath)
+                results1 = zb_decoder(img)
+            except Exception as e:
+                with open(error_log, "a") as f:
+                    print("error:", ipath)
+                    print(f"{ipath}\n", file=f)
+                continue
+
             #results2 = zxing_decoder.decode(ipath)
             if len(results1) != 0:
                 img.save(dist_dir.joinpath(f"{idx}.png"))
