@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import random
 import os
+from torchvision.datasets import FakeData
 
 class PatchesDataset(Dataset):
     """
@@ -86,15 +87,17 @@ def get_Dataloader(qrcode_dir=None, background_dir=None, device=None,
 
 
 if __name__ == "__main__":
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    patches_dataset = PatchesDataset(qrcode_patches_dir='../data/pathes_of_qrcode_32x32',
-                                      background_patches_dir='../data/background_patch',
-                                     device=device)
-
-    print("資料比例:", patches_dataset.weight)
-    while True:
-        _ = random.randint(0, len(patches_dataset))
-        image, label = patches_dataset[_][0].cpu().detach().numpy(), patches_dataset[_][1]
-        label_mean = "QR Code" if label == 1 else "Background"
-        cv2.imshow(f"{label}: {label_mean}", np.array(Image.fromarray(image).resize((320, 320))))
-        cv2.waitKey(1)
+    # 測試 假數據 dataset
+    pass
+    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # patches_dataset = PatchesDataset(qrcode_patches_dir='../data/pathes_of_qrcode_32x32',
+    #                                   background_patches_dir='../data/background_patch',
+    #                                  device=device)
+    #
+    # print("資料比例:", patches_dataset.weight)
+    # while True:
+    #     _ = random.randint(0, len(patches_dataset))
+    #     image, label = patches_dataset[_][0].cpu().detach().numpy(), patches_dataset[_][1]
+    #     label_mean = "QR Code" if label == 1 else "Background"
+    #     cv2.imshow(f"{label}: {label_mean}", np.array(Image.fromarray(image).resize((320, 320))))
+    #     cv2.waitKey(1)
