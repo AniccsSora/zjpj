@@ -28,6 +28,7 @@ parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qr
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
 parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
+parser.add_argument('--cosineAnnealingWarmRestarts', type=bool, default=True)
 # 權重檔案是否指定
 parser.add_argument('--weight_pt', type=str, default="", help='指定權重繼續訓練，留空為重新訓練。')
 # 資料夾參數

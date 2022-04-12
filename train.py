@@ -33,6 +33,20 @@ def _useless_step():
     return Useless()
 
 
+def get_CosineAnnealingWarmRestarts(optimizer, epochs, verbose=True):
+    # epochs 超參數運算用
+
+    # T_0: 何時執行第一次重啟。
+    # T_mult: 後續的重啟時間的乘法因子
+    alpha_ = epochs / 50
+    the_first_restart = int(epochs * (0.08 / alpha_))
+    T_mult = 2
+    return optim.lr_scheduler. \
+            CosineAnnealingWarmRestarts(optimizer,
+                                    T_0=the_first_restart,
+                                    T_mult=T_mult, verbose=verbose)
+
+
 def get_ReduceLROnPlateau(optimizer):
     """
     @note:
@@ -96,6 +110,7 @@ def train(dataloader, net, lr, epochs, weight=None,
     # -----------------------
     # 訓練時的各種旗標
     use_reduceLR = None  # 是否在訓練時期動態降低 lr。
+    use_cosineAnnealingWarmRestarts = kwargs['cosineAnnealingWarmRestarts']
     # -----------------------
     if kwargs is not None:
         use_reduceLR = kwargs['reduceLR']
@@ -132,14 +147,21 @@ def train(dataloader, net, lr, epochs, weight=None,
     else:
         scheduler = _useless_step()
 
+    if use_cosineAnnealingWarmRestarts:
+        cosineAnnealingWarmRestarts_scheduler = get_CosineAnnealingWarmRestarts(optimizer, epochs)
+    else:
+        cosineAnnealingWarmRestarts_scheduler = _useless_step()
+
     eval_loss = {
         "train": [],
         "val": []
     }
     logging.info("===================================")
     lr_log = []
+    iters = len(dataloader)
     for epoch in range(epochs):
         running_loss_in_epoch, cnt = 0, 0
+        i_cnt = 0  #  cosineAnnealingWarmRestarts_scheduler 用的計數
         for data in tqdm(dataloader, desc=f'Epoch {epoch+1} - Training', position=0, leave=True):
             train_images, train_labels = data
             optimizer.zero_grad()
@@ -149,6 +171,8 @@ def train(dataloader, net, lr, epochs, weight=None,
             optimizer.step()
             # ---
             running_loss_in_epoch += loss.item()
+            cosineAnnealingWarmRestarts_scheduler.step(epoch+i_cnt/iters)
+            i_cnt += 1
             cnt += 1
         torch.save(net.state_dict(), f"{draw}/weight_{epoch+1}.pt")
         if os.path.exists(f"{draw}/weight_{epoch}.pt"):
