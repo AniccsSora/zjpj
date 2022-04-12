@@ -13,22 +13,47 @@ class PatchesDataset(Dataset):
     """
     32x32 patches
     """
-    def __init__(self, qrcode_patches_dir, background_patches_dir, device):
-        if qrcode_patches_dir is not None:
-            assert os.path.isdir(qrcode_patches_dir)  # 請確認 qrcode patch 資料夾存在
-            self.qr_patch_path_list = glob.glob(pjoin(qrcode_patches_dir, '*/*.*'), recursive=True)
-        else:
-            self.qr_patch_path_list = []
-        if background_patches_dir is not None:
-            assert os.path.isdir(background_patches_dir)  # 請確認 background patches 資料夾存在
-            self.background_patch_path_list = glob.glob(pjoin(background_patches_dir, '*/*.*'), recursive=True)
-        else:
-            self.background_patch_path_list = []
+    def __init__(self, qrcode_dir_list, background_dir_list, device):
+        self.qr_patch_path_list = self.find_all_file(qrcode_dir_list)
+        self.background_patch_path_list = self.find_all_file(background_dir_list)
+        # 取得 qrcode path
+        # if qrcode_patches_dir is not None:
+        #     _ = None
+        #     for dir in qrcode_patches_dir:
+        #         assert os.path.isdir(dir)  # 請確認 qrcode patch 資料夾存在
+        #         _ = glob.glob(pjoin(dir, '*/*.*'), recursive=True)
+        #         if self.qr_patch_path_list is None:
+        #             self.qr_patch_path_list = _
+        #         else:
+        #             self.qr_patch_path_list = self.qr_patch_path_list + _
+        # else:
+        #     self.qr_patch_path_list = []
+
+        # if background_patches_dir is not None:
+        #     assert os.path.isdir(background_patches_dir)  # 請確認 background patches 資料夾存在
+        #     self.background_patch_path_list = glob.glob(pjoin(background_patches_dir, '*/*.*'), recursive=True)
+        # else:
+        #     self.background_patch_path_list = []
         self.device = device
         self.data = self.qr_patch_path_list + self.background_patch_path_list
         qr_ratio = len(self.qr_patch_path_list) / len(self.data)
         bg_ratio = len(self.background_patch_path_list) / len(self.data)
         self.weight = {'background': bg_ratio, 'QRCode': qr_ratio}
+
+    def find_all_file(self, path_list):
+        res_path_list = None
+        if path_list is not None:
+            _ = None
+            for dir in path_list:
+                assert os.path.isdir(dir)  # 請確認 qrcode patch 資料夾存在
+                _ = glob.glob(pjoin(dir, '*/*.*'), recursive=True)
+                if res_path_list is None:
+                    res_path_list = _
+                else:
+                    res_path_list = res_path_list + _
+        else:
+            res_path_list = []
+        return res_path_list
 
     def __len__(self):
         return len(self.data)

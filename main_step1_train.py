@@ -96,11 +96,15 @@ if __name__ == "__main__":
     # 背景 patch 資料夾
     Background_patch_dir_root = "./data/!new_merge_background"  # './data/background_patch'
 
-    patches_dataset = PatchesDataset(qrcode_patches_dir=QRCode_patch_dir_root,
-                                     background_patches_dir=Background_patch_dir_root,
+    qrcode_dirs = [QRCode_patch_dir_root]
+    backgg_dirs = [Background_patch_dir_root]
+    # 設定訓練資料夾
+    patches_dataset = PatchesDataset(qrcode_dir_list=qrcode_dirs,
+                                     background_dir_list=backgg_dirs,
                                      device=device)
-    val_dataset = PatchesDataset(qrcode_patches_dir='./data/val_patch_True',
-                                 background_patches_dir='./data/val_patch_False',
+    # 設定驗證資料夾
+    val_dataset = PatchesDataset(qrcode_dir_list=['./data/val_patch_True'],
+                                 background_dir_list=['./data/val_patch_False'],
                                  device=device)
 
     data_weight = patches_dataset.weight
