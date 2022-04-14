@@ -72,7 +72,7 @@ if __name__ == "__main__":
     save_path = pjoin(log_dir, current_time.strftime('%Y%m%d_%H%M_%S')+fd_postfix)  # 時戳資料夾
     if param.weight_pt != "":
         assert os.path.exists(param.weight_pt)
-        save_path += "_reWeighting"  # 表示重新使用舊的 pt
+        save_path += "_reuse_Weight"  # 表示重新使用舊的 pt
         logging.info(f"繼續訓練 pt: {param.weight_pt}")
         while True:
             _response = str(input("是否繼續訓練 此pt: {}?(y/N)".format(param.weight_pt)))[0]

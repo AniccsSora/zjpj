@@ -1,12 +1,11 @@
 import os
 from os.path import join as pjoin
 import pathlib
-import glob
 import tqdm
 from PIL import Image
 import PIL
 from pyzbar.pyzbar import decode as zb_decoder
-from pyzxing import BarCodeReader as ZxingDecoder
+import imagehash
 
 
 class QRCleaner:
@@ -63,15 +62,12 @@ class QRCleaner:
         if len(unread_images) != 0:
             print(f"請開啟 unconvert image.txt 確認尚未轉換之圖片。")
 
-
-    def detectQR_and_resave(self, src_dir, dist_dir):
+    def detectQR_and_resaveValidQR(self, src_dir, dist_dir):
         src_dir = self._rebuild_path(src_dir)
         dist_dir = self._rebuild_path(dist_dir)
         os.makedirs(dist_dir, exist_ok=True)
 
         _ = [_ for _ in src_dir.rglob('*.*')]
-        _ = _[754:]
-        zxing_decoder = ZxingDecoder()
 
         error_log = "error_detect_log.txt"
         if os.path.exists(error_log):
@@ -81,7 +77,7 @@ class QRCleaner:
         for idx in pbar:
             ipath = _[idx]
             try:
-                print(ipath)
+                pbar.set_description("{}:{}".format(idx, ipath.name))
                 img = Image.open(ipath)
                 results1 = zb_decoder(img)
             except Exception as e:
@@ -93,25 +89,28 @@ class QRCleaner:
             #results2 = zxing_decoder.decode(ipath)
             if len(results1) != 0:
                 img.save(dist_dir.joinpath(f"{idx}.png"))
-            # if len(results2) != 0:
-            #     print(results2)
 
+    def check_duplicated(self, tar_dir, save_dir):
+        src_dir = self._rebuild_path(tar_dir)
+        assert src_dir.is_dir()
 
-
-
-
-
+        imagehash = imagehash.average_hash(Image.open('test.png'))
 
 if __name__ == "__main__":
 
     # QRCleaner("原始各種圖片來源Dir")
-    cleaner = QRCleaner(r"C:\Users\Anicca\Desktop\QRcode")
+    cleaner = QRCleaner(r"C:\Users\lab87\Desktop\QRcode")
 
-    # 全部另存並轉成 RGB .png 格式，路徑於建構子內設定
+    # 1. 全部另存並轉成 RGB .png 格式，路徑於建構子內設定
     # "統一另存的資料夾位置"
-    # cleaner._resave_image(r"./hello_test1")
+    # cleaner._resave_image(r"./hello_png")
 
-    src_dir = r"./hello_test1"
-    dist_dir = r"./valid_qrcode"
-    # 將有效的圖片檔案，丟入 qrcode detector，有被detector的才算是可用資料。
-    cleaner.detectQR_and_resave(src_dir, dist_dir)
+    # src_dir = r"./valid_qrcode"  # 來源資料夾
+    # dist_dir = r"./valid_qrcode_again"  # 存放合法 QRcode 資料夾
+    # # 2. 將有效的圖片檔案，丟入 qrcode detector，有被detector的才算是可用資料。
+    # cleaner.detectQR_and_resaveValidQR(src_dir, dist_dir)
+
+    # 檢查資料集內有無重複資料
+    tar_dir = ""
+    sav_dir = ""
+    cleaner.check_duplicated(tar_dir=tar_dir, save_dir=sav_dir)
