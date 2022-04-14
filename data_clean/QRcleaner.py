@@ -74,6 +74,7 @@ class QRCleaner:
             os.remove(error_log)
 
         pbar = tqdm.tqdm(range(len(_)))
+
         for idx in pbar:
             ipath = _[idx]
             try:
@@ -90,11 +91,72 @@ class QRCleaner:
             if len(results1) != 0:
                 img.save(dist_dir.joinpath(f"{idx}.png"))
 
-    def check_duplicated(self, tar_dir, save_dir):
+    def check_duplicated(self, tar_dir, save_dir, exist_ok=False):
         src_dir = self._rebuild_path(tar_dir)
+        save_dir = self._rebuild_path(save_dir)
+        os.makedirs(save_dir, exist_ok=exist_ok)
+
         assert src_dir.is_dir()
 
-        imagehash = imagehash.average_hash(Image.open('test.png'))
+        hashfunc = imagehash.phash
+        image_hash_set = set()
+        hash_dict = dict()
+
+        save_idx = 0
+        _ = [aa for aa in src_dir.rglob("*.*")]
+        pbar = tqdm.tqdm(range(len(_)), smoothing=0.1, ncols=100)
+        for idx in pbar:
+            fpath = _[idx]
+            pbar.set_description("processing: \"{}\"".format(fpath))
+            hash = hashfunc(Image.open(fpath))
+            hex_key = str(hash)
+            if hex_key in image_hash_set:
+                continue
+            else:
+                image_hash_set.add(hex_key)
+                hash_dict.update({hex_key: fpath})
+                Image.open(fpath).save(save_dir.joinpath(f"{save_idx}.png"))
+                save_idx += 1
+        print("共有 {} 張照片為不同".format(len(image_hash_set)))
+
+    def qr_xywh(self, src_dir, xywh_dir):
+        src_dir = self._rebuild_path(src_dir)
+        xywh_dir = self._rebuild_path(xywh_dir)
+        os.makedirs(xywh_dir, exist_ok=True)
+
+
+        for impath in src_dir.rglob("*.*"):
+            im = Image.open(impath)
+            w, h = im.size
+            tk = zb_decoder(im)
+            re = self.parse_position(tk, w, h)
+            save_name = xywh_dir.joinpath(f"{impath.stem}.txt")
+            with open(save_name, 'w') as f:
+                 for _ in re:
+                     _ = str(["{:.6f}".format(__) for __ in _])  # 轉成小數後 6 位數
+                     _ = _.replace('\'', '').replace('[', '').\
+                           replace(']', '').replace(',', '')
+                     write2file = _
+                     write2file = f"0 {write2file}\n"
+                     f.write(write2file)
+            # write file End
+
+
+    def parse_position(self, tk_list, w, h):
+        res = []
+        for tk in tk_list:
+            x_min = tk.rect.left
+            x_max = tk.rect.left + tk.rect.width
+            y_min = tk.rect.top
+            y_max = tk.rect.top + tk.rect.height
+            x_center = ((x_min+x_max)/2) / w
+            y_center = ((y_min+y_max)/2) / h
+            yolo_w = (x_max-x_min) / w
+            yolo_h = (y_max - y_min) / h
+            res.append([x_center, y_center, yolo_w, yolo_h])
+        return res
+    #python labelImg.py D:\Git\zjpj\data_clean\non_duplicated  D:\Git\zjpj\data_clean\label_xywh
+
 
 if __name__ == "__main__":
 
@@ -107,10 +169,18 @@ if __name__ == "__main__":
 
     # src_dir = r"./valid_qrcode"  # 來源資料夾
     # dist_dir = r"./valid_qrcode_again"  # 存放合法 QRcode 資料夾
-    # # 2. 將有效的圖片檔案，丟入 qrcode detector，有被detector的才算是可用資料。
+    # 2. 將有效的圖片檔案，丟入 qrcode detector，有被detector的才算是可用資料。
     # cleaner.detectQR_and_resaveValidQR(src_dir, dist_dir)
 
-    # 檢查資料集內有無重複資料
-    tar_dir = ""
-    sav_dir = ""
-    cleaner.check_duplicated(tar_dir=tar_dir, save_dir=sav_dir)
+    # 3. 檢查資料集內有無重複資料
+    # tar_dir = "./new_set801"
+    # sav_dir = "./non_duplicated"
+    # cleaner.check_duplicated(tar_dir=tar_dir, save_dir=sav_dir, exist_ok=True)
+
+    # 4. 利用 qr detector 來標記 src 的圖，label 存放在 xywh_dir
+    # src_dir = "./non_duplicated"  # 圖片DIR
+    # xywh_dir = "./label_xywh"  # label 的存放目的DIR
+    # cleaner.qr_xywh(src_dir, xywh_dir)
+
+    # 執行 labelImg 指令  python labelImg.py {圖片 DIR} {LABEL 存放區}
+    # python labelImg.py D:\Git\zjpj\data_clean\non_duplicated  D:\Git\zjpj\data_clean\label_xywh
