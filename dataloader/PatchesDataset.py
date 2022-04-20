@@ -7,7 +7,10 @@ import cv2
 import numpy as np
 import random
 import os
+import time
 from torchvision.datasets import FakeData
+import torchvision
+import matplotlib.pyplot as plt
 
 class PatchesDataset(Dataset):
     """
@@ -16,24 +19,6 @@ class PatchesDataset(Dataset):
     def __init__(self, qrcode_dir_list, background_dir_list, device):
         self.qr_patch_path_list = self.find_all_file(qrcode_dir_list)
         self.background_patch_path_list = self.find_all_file(background_dir_list)
-        # 取得 qrcode path
-        # if qrcode_patches_dir is not None:
-        #     _ = None
-        #     for dir in qrcode_patches_dir:
-        #         assert os.path.isdir(dir)  # 請確認 qrcode patch 資料夾存在
-        #         _ = glob.glob(pjoin(dir, '*/*.*'), recursive=True)
-        #         if self.qr_patch_path_list is None:
-        #             self.qr_patch_path_list = _
-        #         else:
-        #             self.qr_patch_path_list = self.qr_patch_path_list + _
-        # else:
-        #     self.qr_patch_path_list = []
-
-        # if background_patches_dir is not None:
-        #     assert os.path.isdir(background_patches_dir)  # 請確認 background patches 資料夾存在
-        #     self.background_patch_path_list = glob.glob(pjoin(background_patches_dir, '*/*.*'), recursive=True)
-        # else:
-        #     self.background_patch_path_list = []
         self.device = device
         self.data = self.qr_patch_path_list + self.background_patch_path_list
         qr_ratio = len(self.qr_patch_path_list) / len(self.data)
@@ -58,6 +43,30 @@ class PatchesDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+    def make_square(self, img):
+        h, w = img.shape[0], img.shape[1]
+        if w == h:  # 長寬相等直接返回
+            return img
+        # 將長寬比不為 1:1 的套用 padding 只補單邊補齊，隨機補。
+        diff = abs(w-h)
+        rd_tk = random.randint(0, 100) % 2 == 0  # 左補右捕的 token
+        if w > h:
+            # 補高
+            if rd_tk:
+                pad_width = ((diff, 0), (0, 0))
+            else:
+                pad_width = ((0, diff), (0, 0))
+        else:
+            # 補寬
+            if rd_tk:
+                pad_width = ((0, 0), (0, diff))
+            else:
+                pad_width = ((0, 0), (diff, 0))
+
+        img = np.pad(img, pad_width=pad_width, mode='constant', constant_values=0)
+
+        return img
+
     def __getitem__(self, idx):
         is_qrcode = False
         if idx < len(self.qr_patch_path_list):
@@ -65,6 +74,8 @@ class PatchesDataset(Dataset):
         image = cv2.imread(self.data[idx], cv2.IMREAD_GRAYSCALE)
         label = 1 if is_qrcode else 0
         label = torch.tensor(label, device=self.device, dtype=torch.uint8)
+
+        image = self.make_square(image)
 
         ## 模糊化
         image = cv2.GaussianBlur(image, (11, 11), 3)
@@ -102,8 +113,13 @@ def get_Dataloader(qrcode_dir=None, background_dir=None, device=None,
     @return: torch.util.data.Dataloader
     """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    patches_dataset = PatchesDataset(qrcode_patches_dir=qrcode_dir,
-                                     background_patches_dir=background_dir,
+    if not isinstance(qrcode_dir, list):
+        qrcode_dir = [qrcode_dir]
+    if not isinstance(background_dir, list):
+        background_dir = [background_dir]
+
+    patches_dataset = PatchesDataset(qrcode_dir_list=qrcode_dir,
+                                     background_dir_list=background_dir,
                                      device=device)
 
     res_dataloader = DataLoader(patches_dataset,
@@ -113,16 +129,17 @@ def get_Dataloader(qrcode_dir=None, background_dir=None, device=None,
 
 if __name__ == "__main__":
     # 測試 假數據 dataset
-    pass
-    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    # patches_dataset = PatchesDataset(qrcode_patches_dir='../data/pathes_of_qrcode_32x32',
-    #                                   background_patches_dir='../data/background_patch',
-    #                                  device=device)
-    #
-    # print("資料比例:", patches_dataset.weight)
-    # while True:
-    #     _ = random.randint(0, len(patches_dataset))
-    #     image, label = patches_dataset[_][0].cpu().detach().numpy(), patches_dataset[_][1]
-    #     label_mean = "QR Code" if label == 1 else "Background"
-    #     cv2.imshow(f"{label}: {label_mean}", np.array(Image.fromarray(image).resize((320, 320))))
-    #     cv2.waitKey(1)
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    qrcode_dir_list = [r'D:\Git\zjpj\data_clean\the_real593_patches\filter_OK']
+    background_dir_list = ['../data/background_patch']
+    patches_dataset = PatchesDataset(qrcode_dir_list,
+                                     background_dir_list,
+                                     device=device)
+
+    print("資料比例:", patches_dataset.weight)
+
+    for idx in patches_dataset:
+        pass
+
