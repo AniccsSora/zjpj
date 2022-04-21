@@ -27,7 +27,7 @@ parser.add_argument('--background_dataset_weight', type=float, default=1.0, help
 parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qrcode的資料占比加權平衡後乘上的數字')
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
-parser.add_argument('--reduceLR', type=bool, default=True, help='使用 ReduceLROnPlateau 來優化訓練')
+parser.add_argument('--reduceLR', type=bool, default=False, help='使用 ReduceLROnPlateau 來優化訓練')
 parser.add_argument('--cosineAnnealingWarmRestarts', type=bool, default=True)
 # 權重檔案是否指定
 parser.add_argument('--weight_pt', type=str, default="", help='指定權重繼續訓練，留空為重新訓練。')
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # 背景 patch 資料夾
     Background_patch_dir_root = "./data/!new_merge_background"  # './data/background_patch'
 
-    qrcode_dirs = [QRCode_patch_dir_root]
+    qrcode_dirs = [QRCode_patch_dir_root, r"D:\Git\zjpj\data_clean\the_real593_patches\filter_OK"]
     backgg_dirs = [Background_patch_dir_root]
     # 設定訓練資料夾
     patches_dataset = PatchesDataset(qrcode_dir_list=qrcode_dirs,
@@ -114,6 +114,7 @@ if __name__ == "__main__":
     val_dataloader = DataLoader(val_dataset, batch_size=512, shuffle=True, pin_memory=False)
 
     net = QRCode_CNN(drop=param.drop)  # drop: drop layer.
+    logging.info(net)
     if param.weight_pt != "":
         print("reloading pt:", param.weight_pt)
         net.load_state_dict(torch.load(param.weight_pt))
@@ -141,6 +142,7 @@ if __name__ == "__main__":
     plt.plot(loss_val, label='val')
     plt.title(title_str)
     plt.legend()
+    plt.grid(True, alpha=0.4)
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'loss_graph.png'))
 

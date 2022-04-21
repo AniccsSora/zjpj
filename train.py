@@ -38,7 +38,7 @@ def get_CosineAnnealingWarmRestarts(optimizer, epochs, verbose=True):
 
     # T_0: 何時執行第一次重啟。
     # T_mult: 後續的重啟時間的乘法因子
-    alpha_ = epochs / 50
+    alpha_ = epochs / 25
     the_first_restart = int(epochs * (0.08 / alpha_))
     T_mult = 2
     return optim.lr_scheduler. \
@@ -60,7 +60,7 @@ def get_ReduceLROnPlateau(optimizer):
                             verbose=True,  # 下降時是否提示
                             threshold=1e-4,  # 小數點第幾位當成變化閥值?default: 1e-4
                             threshold_mode='rel',  # default: rel
-                            min_lr=1e-6,  # 最小的學習率。default=1e-4
+                            min_lr=1e-4,  # 最小的學習率。default=1e-4
                             cooldown=0,  # 觸發更新條件後，等待幾個epoches 再監視。default=0
                             eps=1e-8  # 更新前後 的 lr 差距小於此值時候，不更新此次的 lr。default=1e-8
                             )
@@ -83,6 +83,7 @@ def draw_loss_and_lr_figure(epochs, lr, loss_train_and_val: list, title_str, sav
     plt.plot(loss_val, label='val')
     plt.title(title_str)
     plt.legend()
+    plt.grid(True, alpha=0.4)
     plt.tight_layout()
     plt.savefig(pjoin(save_path, 'loss_graph.png'))
     plt.close('all')
