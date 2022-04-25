@@ -97,7 +97,7 @@ if __name__ == "__main__":
     Background_patch_dir_root = "./data/!new_merge_background"  # './data/background_patch'
 
     qrcode_dirs = [QRCode_patch_dir_root, r"D:\Git\zjpj\data_clean\the_real593_patches\filter_OK"]
-    backgg_dirs = [Background_patch_dir_root]
+    backgg_dirs = [Background_patch_dir_root, "./data_clean/new_background"]
     # 設定訓練資料夾
     patches_dataset = PatchesDataset(qrcode_dir_list=qrcode_dirs,
                                      background_dir_list=backgg_dirs,

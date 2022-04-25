@@ -94,11 +94,12 @@ if __name__ == "__main__":
     merge_delta_x = 0.01
     merge_delta_y = 0.01
     # 針對實驗寫迴圈 生出圖片
-    pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
-    #pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
+    pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/raw_qr/qr_0028.jpg", cv2.IMREAD_GRAYSCALE)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20211219_2222_10_使用大於1的權重_bkWeight_3/weight.pt"
+    weight_path = "./log_save/20220425_0233_02/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
