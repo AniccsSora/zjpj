@@ -86,7 +86,7 @@ def determine_new_p(p_list, percentile, bigger_1_reduce_percentile=1):
 if __name__ == "__main__":
     bbox_threshold = 0.995  # 0.99999995
     auto_thres = True  # False=使用固定閥值
-    percentile_pick = 95  # 動態閥值的取的百分位數
+    percentile_pick = 99.999  # 動態閥值的取的百分位數
 
     thick = 2
     overlap = 0.3  # 切割精細度
@@ -95,11 +95,12 @@ if __name__ == "__main__":
     merge_delta_y = 0.01
     # 針對實驗寫迴圈 生出圖片
     #pred_img = cv2.imread("./data/paper_qr/File 088.bmp", cv2.IMREAD_GRAYSCALE)
-    pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
-    #pred_img = cv2.imread("./data/raw_qr/qr_0028.jpg", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/raw_qr/qr_0016_big.jpg", cv2.IMREAD_GRAYSCALE)
+    #pred_img = cv2.imread("./data/raw_qr/qr_0013.jpg", cv2.IMREAD_GRAYSCALE)
+    pred_img = cv2.imread("./data_clean/the_real593/41.png", cv2.IMREAD_GRAYSCALE)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20220425_0233_02/weight.pt"
+    weight_path = "./log_save/20220425_0233_02_batch_256/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
