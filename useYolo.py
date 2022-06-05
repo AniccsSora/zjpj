@@ -2,7 +2,7 @@ import torch
 import cv2
 
 # yolo weight path
-wp = r'D:\Git\yolov5\runs\train\exp2_補500張e100_arg_high\weights\best.pt'
+wp = './exp2_補500張e100_arg_high/weights/best.pt'
 model = torch.hub.load('ultralytics/yolov5', 'custom', wp)
 
 def get_xyxy(img):
