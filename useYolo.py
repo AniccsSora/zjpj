@@ -6,7 +6,7 @@ wp = './exp2_補500張e100_arg_high/weights/best.pt'
 model = torch.hub.load('ultralytics/yolov5', 'custom', wp)
 
 def get_xyxy(img):
-    assert isinstance(img, str)
+    #assert isinstance(img, str)
     result = model(img)
 
     xyxypc_res = []
@@ -21,10 +21,11 @@ def get_xyxy(img):
 
 
 if __name__ == "__main__":
-    imgs = [r'D:\Git\yolov5\data\images\502.png', r'D:\Git\yolov5\data\images\504.png']
+    imgs = [r"D:\git-repo\zjpj\data\raw_qr\qr_0025.jpg"]
+    # r'D:\Git\yolov5\data\images\504.png'
     for img in imgs:
         cv_im = cv2.imread(img)
-        res = get_xyxy(img)  # get_xyxy: 回傳 list，根據 bbox數量，裡面放置xyxypc資料
+        res = get_xyxy(cv_im)  # get_xyxy: 回傳 list，根據 bbox數量，裡面放置xyxypc資料
         # for res_single in res:
         #     x1,y1,x2,y2,p,c = res_single
         #     cv2.rectangle(cv_im, (x1, y1), (x2, y2), (0, 255, 0), 3)
