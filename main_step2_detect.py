@@ -100,7 +100,7 @@ if __name__ == "__main__":
     pred_img = cv2.imread("./data_clean/the_real593/41.png", cv2.IMREAD_GRAYSCALE)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    weight_path = "./log_save/20220425_0233_02_batch_256/weight.pt"
+    weight_path = "./log_save/20220421_1341_58/weight.pt"
     qr_dir = "./data/val_patch_True"
     bg_dir = "./data/val_patch_False"
     val_dataloader = get_Dataloader(qrcode_dir=qr_dir, background_dir=bg_dir)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     net.cuda()
     class_label = ['background', 'QRCode']
     #scale_list = [0.2, 0.3, 0.5, 0.75]  # 這被大量參用
-    scale_list = [0.3, 0.4, 0.5, 0.6]  # 這被大量參用
+    scale_list = [0.25, 0.5, 0.75, 1.0]  # 這被大量參用
     use_0_1 = True  # param
     # 存放著 不同 scale 的 src image.
     multiple_scalling_imgs = scalling_img(pred_img, scale_list=scale_list)

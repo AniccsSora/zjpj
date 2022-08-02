@@ -1,11 +1,7 @@
-import misc.logger as logger
-from imgaug.augmentables.bbs import BoundingBox
 import numpy as np
-import os
 import shutil
 import xml.etree.ElementTree as ET
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
-import imageio
 import imgaug
 from PIL import Image
 from glob import glob
@@ -13,7 +9,9 @@ import os
 import random
 import imageio
 import math
-
+from datetime import datetime
+import logging
+from pathlib import Path
 
 def dataset_split(dir, train=0.7, valid=0.3, image_format=['png', 'jpeg', 'jpg'],
                   labels_format=['txt'], train_dir='train', valid_dir='valid',
@@ -399,6 +397,36 @@ def remove_negative_bbox(label_pth, re_dir=False, file_type='txt', fn_ptn='qr*',
             total_cnt += 1
 
     print(f"\ntotal modified file: {total_cnt} file(s) / {fnumber} files.\n")
+
+def timestamp():
+    return datetime.now().strftime("%Y-%m-%d_%p_%Ih%Mm%Ss")
+
+def set_logger(path=None):
+    path = Path(path)
+    save_path = None
+    if path is not None:
+        ensure_folder(path)
+        save_path = Path(os.getcwd()).joinpath(path)
+        print(f"存檔路徑訂為 : {save_path}")
+    else:
+        save_path = Path(os.getcwd())
+        print(f"尚未設定 log 存檔路徑預設為 {save_path}")
+
+    # 設定 logging, 同時也設定好 filestream
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s | %(message)s',
+                        datefmt='%m-%d %p_%I:%M:%S',
+                        filename=save_path.joinpath(f'running-{timestamp()}.log'),
+                        filemode='w')
+    # 設定 console 的警報階層
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    # 設定 formatter
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    # console 使用沒有時間的 formatter
+    console.setFormatter(formatter)
+    # 為 root logger 加入 handler
+    logging.getLogger('').addHandler(console)
 
 
 if __name__ == "__main__":

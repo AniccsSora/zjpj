@@ -4,6 +4,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+import glob
 
 
 def draw_bbox(bboxes, img, draw_p, show_p = True):
@@ -52,7 +53,8 @@ if __name__ == "__main__":
     #
 
     # 檢測 img path
-    img_list = [r"D:\git-repo\zjpj\data\raw_qr\qr_0016.jpg"]
+    detection_root = r"D:\git-repo\zjpj\data\raw_qr"
+    img_list = glob.glob(detection_root+'\*.*')
 
     bboxes_res = None
     bboxex_results = []
@@ -62,7 +64,7 @@ if __name__ == "__main__":
         # draw box
         have_box_img = draw_bbox(bboxes_res, im, draw_p=0.5, show_p=True)
 
-    bboxex_results.append(have_box_img)
+        bboxex_results.append(have_box_img)
 
     plt.imshow(bboxex_results[0])
     plt.show()
