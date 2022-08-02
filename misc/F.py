@@ -407,17 +407,26 @@ def set_logger(path=None):
     if path is not None:
         ensure_folder(path)
         save_path = Path(os.getcwd()).joinpath(path)
-        print(f"存檔路徑訂為 : {save_path}")
+        print(f"log 存檔路徑訂為 : {save_path}")
     else:
         save_path = Path(os.getcwd())
         print(f"尚未設定 log 存檔路徑預設為 {save_path}")
 
+    # 特處理編碼用的
+    encode_handler = logging.FileHandler(filename=save_path.joinpath(f'running-{timestamp()}.log'),
+                                    encoding='utf-8', mode='w')
     # 設定 logging, 同時也設定好 filestream
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
+                        handlers=[encode_handler],
                         format='%(asctime)s %(name)-12s %(levelname)-8s | %(message)s',
                         datefmt='%m-%d %p_%I:%M:%S',
-                        filename=save_path.joinpath(f'running-{timestamp()}.log'),
-                        filemode='w')
+                        )
+    # logging.basicConfig(level=logging.DEBUG,
+    #                     format='%(asctime)s %(name)-12s %(levelname)-8s | %(message)s',
+    #                     datefmt='%m-%d %p_%I:%M:%S',
+    #                     filename=save_path.joinpath(f'running-{timestamp()}.log'),
+    #                     filemode='w')
+
     # 設定 console 的警報階層
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)

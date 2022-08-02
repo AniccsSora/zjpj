@@ -1,10 +1,12 @@
 import torch
 import cv2
+import matplotlib.pyplot as plt
 
 # yolo weight path
 wp = './exp2_補500張e100_arg_high/weights/best.pt'
 # verbose = False 把 use cache 訊息遮蔽。
 model = torch.hub.load('ultralytics/yolov5', 'custom', wp, verbose=False)
+
 
 def get_xyxy(img):
     #assert isinstance(img, str)
@@ -27,8 +29,8 @@ if __name__ == "__main__":
     for img in imgs:
         cv_im = cv2.imread(img)
         res = get_xyxy(cv_im)  # get_xyxy: 回傳 list，根據 bbox數量，裡面放置xyxypc資料
-        # for res_single in res:
-        #     x1,y1,x2,y2,p,c = res_single
-        #     cv2.rectangle(cv_im, (x1, y1), (x2, y2), (0, 255, 0), 3)
-        # cv2.imshow('result', cv_im)
-        # cv2.waitKey(0)
+        for res_single in res:
+            x1,y1,x2,y2,p,c = res_single
+            cv2.rectangle(cv_im, (x1, y1), (x2, y2), (0, 255, 0), 3)
+        cv2.imshow('result', cv_im)
+        cv2.waitKey(0)
