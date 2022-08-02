@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
+
 def draw_bbox(bboxes, img, draw_p, show_p = True):
     """
 
@@ -44,6 +45,11 @@ def gkern(l=32, sig=10):
 
 
 if __name__ == "__main__":
+    # 使用者\.cache\torch\hub\ultralytics_yolov5_master\utils\general.py
+    # def set_logging():
+    #   內部插入
+    #   ++ log.setLevel(logging.ERROR)
+    #
 
     # 檢測 img path
     img_list = [r"D:\git-repo\zjpj\data\raw_qr\qr_0016.jpg"]

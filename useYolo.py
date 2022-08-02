@@ -3,7 +3,8 @@ import cv2
 
 # yolo weight path
 wp = './exp2_補500張e100_arg_high/weights/best.pt'
-model = torch.hub.load('ultralytics/yolov5', 'custom', wp)
+# verbose = False 把 use cache 訊息遮蔽。
+model = torch.hub.load('ultralytics/yolov5', 'custom', wp, verbose=False)
 
 def get_xyxy(img):
     #assert isinstance(img, str)
