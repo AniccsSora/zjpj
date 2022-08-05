@@ -18,7 +18,7 @@ LOG_SAVE_FOLDER = f"log_save/{timestamp()}"
 ensure_folder(LOG_SAVE_FOLDER)
 
 set_logger(path=LOG_SAVE_FOLDER)
-logger = logging.getLogger("Detector.py")
+logger = logging.getLogger("Detector_show4d.py")
 
 class Detector:
     def __init__(self, weight, net, save_folder):
@@ -37,7 +37,7 @@ class Detector:
         # 使用固定閥值 是與否?
         self.auto_thres = True  # False=使用固定閥值
         # 動態閥值的取的百分位數
-        self.percentile_pick = 99.999
+        self.percentile_pick = 90
         #
         # 固定定義
         self._class_label = ['background', 'QRCode']
@@ -129,8 +129,14 @@ class Detector:
             logger.info(f'[debug]: 過濾閥值 "沒有" 均大於 0.5')
         res = np.percentile(p_list, percentile)
         while res >= 1.0:
-            percentile -= 1
-            res = np.percentile(p_list, percentile)
+            percentile -= 0.01  # 需要重新審視
+            try:
+                res = np.percentile(p_list, percentile)
+            except ValueError:
+                logger.info(f"[warn]: p_list, percentile: {p_list}, {percentile}")
+                logger.info("[warn] 自動 clip 到 :", np.clip(percentile, 0, 100))
+                res = np.percentile(p_list, np.clip(percentile, 0, 100))
+                print("res =", res)
         logger.info(f'更新閥值為: {res}, 使用 {percentile} 百分位值')
         return res, percentile
 
@@ -246,6 +252,8 @@ class Detector:
         # 將預測的 bbox 繪製到多尺度的圖片上
         self.with_bbox_multi_images = []  # 存放被畫上 bbox 的 multiple scaling images
         self.with_merged_bbox_multi_images = []  # 存放被 merge 過的 bbox 的 multiple scaling images
+        self.with_merged_bbox_and_corresponding_img = dict().fromkeys(self.scale_list, None)  # 存放 merged 後的 框框 與對應的圖片
+
         for scale_val in self.scale_list:
             image = multiple_scalling_imgs[scale_val]
             image_ = np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
@@ -257,9 +265,16 @@ class Detector:
             for xyxy in merge_bboxes(pick_xyxy_dict[scale_val],
                                      delta_x=self.merge_delta_x,
                                      delta_y=self.merge_delta_y):
+                # 製作後續要優化的 合成bbox 完成之框，並記錄下來
+                if self.with_merged_bbox_and_corresponding_img[scale_val] is None:
+                    self.with_merged_bbox_and_corresponding_img[scale_val] = dict({"bbox": [],
+                                                                                   "img": np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
+                                                                                   })  # 紀錄合成完畢的 bboxes
+                self.with_merged_bbox_and_corresponding_img[scale_val]["bbox"].append(xyxy)
                 cv2.rectangle(image_m_, xyxy[0:2], xyxy[2:], color=(0, 255, 0), thickness=self.thick)
             self.with_bbox_multi_images.append(image_)
             self.with_merged_bbox_multi_images.append(image_m_)
+
 
     def plot_result(self, showit=True):
         """
@@ -303,7 +318,11 @@ class Detector:
                 axi.set_title(f"Scale: {str(self.scale_list[i])}")
         plt.tight_layout()
         plt.savefig(Path(self.save_folder).joinpath(f'{self.cursor_img_name}_detection.png'))
-        # plt.show()
+        if showit:
+            pass
+        else:
+            plt.clf()
+            plt.close()
 
         # 繪製 merge bbox 版本
         fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
@@ -334,10 +353,11 @@ class Detector:
         if showit:
             plt.show()
         plt.clf()
+        plt.close()
 
 if __name__ == "__main__":
 
-    origin_detector = Detector(weight="./log_save/20220804_0136_01/weight.pt", save_folder=LOG_SAVE_FOLDER,
+    origin_detector = Detector(weight="./log_save/20220805_1812_19/weight.pt", save_folder=LOG_SAVE_FOLDER,
              net=qrcnn_model.QRCode_CNN())
 
 
@@ -350,6 +370,7 @@ if __name__ == "__main__":
         # img_path = fname_list[idx]
         img_path = fname_list[rand_pick]
         origin_detector.multiscale_prediction(img_path)
+        print(len(origin_detector.with_merged_bbox_and_corresponding_img[0.5]['bbox']))
         origin_detector.plot_result(showit=False)
         cnt += 1
         if cnt > 20:

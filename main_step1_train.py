@@ -22,9 +22,9 @@ parser = argparse.ArgumentParser("參數設定")
 parser.add_argument('--epochs', type=int, default=50, help='訓練週期次數')
 parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--drop', type=float, default=0.2, help='conv layer 後的dropout率')
-parser.add_argument('--batch_size', type=int, default=32, help='conv layer 後的dropout率')
+parser.add_argument('--batch_size', type=int, default=96, help='conv layer 後的dropout率')
 parser.add_argument('--background_dataset_weight', type=float, default=1.0, help='背景圖片的的資料占比加權平衡後乘上的數字')
-parser.add_argument('--qrcode_dataset_weight', type=float, default=1.0, help='qrcode的資料占比加權平衡後乘上的數字')
+parser.add_argument('--qrcode_dataset_weight', type=float, default=0.1, help='qrcode的資料占比加權平衡後乘上的數字')
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 # optim
 parser.add_argument('--reduceLR', type=bool, default=False, help='使用 ReduceLROnPlateau 來優化訓練')
@@ -91,13 +91,15 @@ if __name__ == "__main__":
 
     # QRCode patch 資料夾
     # QRCode_patch_dir_root = './data/pathes_of_qrcode_32x32'  # 裡面參雜一些很不像 QRCode 的patch
-    QRCode_patch_dir_root = "./data/!new_merge_qr_patch"  # './data/manual_pick_QRcode_Patch'
+    QRCode_patch_dir_root = "./data_clean/the_real593_patches"  # './data/manual_pick_QRcode_Patch'
 
     # 背景 patch 資料夾
-    Background_patch_dir_root = "./data/!new_merge_background"  # './data/background_patch'
+    Background_patch_dir_root = "./data_clean/new_background"  # './data/background_patch'
 
-    qrcode_dirs = [QRCode_patch_dir_root, r"D:\Git\zjpj\data_clean\the_real593_patches\filter_OK"]
-    backgg_dirs = [Background_patch_dir_root, "./data_clean/new_background"]
+    qrcode_dirs = [QRCode_patch_dir_root]
+    backgg_dirs = [Background_patch_dir_root]
+    # qrcode_dirs = [QRCode_patch_dir_root, r"D:\Git\zjpj\data_clean\the_real593_patches\filter_OK"]
+    # backgg_dirs = [Background_patch_dir_root, "./data_clean/new_background"]
     # 設定訓練資料夾
     patches_dataset = PatchesDataset(qrcode_dir_list=qrcode_dirs,
                                      background_dir_list=backgg_dirs,
