@@ -5,11 +5,27 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import glob
+from Detector import Detector
+import logging
+import model as qrcnn_model
+import torch
+from misc.F import set_logger
+import glob
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from misc.F import ensure_folder, timestamp
+
+LOG_SAVE_FOLDER = f"log_save/{timestamp()}"
+
+ensure_folder(LOG_SAVE_FOLDER)
+
+set_logger(path=LOG_SAVE_FOLDER)
+logger = logging.getLogger("main_sp2.py")
 
 
 def draw_bbox(bboxes, img, draw_p, show_p = True):
     """
-
     @param bboxes: 要繪製的 bbox 坐標組
     @param img: str path
     @param draw_p: float, 大於該機率才繪製圖案
@@ -53,8 +69,8 @@ if __name__ == "__main__":
     #
 
     # 檢測 img path
-    detection_root = r"D:\git-repo\zjpj\data\raw_qr"
-    img_list = glob.glob(detection_root+'\*.*')
+    detection_root = r"./data/raw_qr"
+    img_list = glob.glob(detection_root+'/*.*')
 
     bboxes_res = None
     bboxex_results = []
@@ -68,4 +84,3 @@ if __name__ == "__main__":
 
     plt.imshow(bboxex_results[0])
     plt.show()
-    pass
