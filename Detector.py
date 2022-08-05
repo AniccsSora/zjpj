@@ -27,7 +27,6 @@ class Detector:
         @param net: 使用的 nn.Module
         """
         self.save_folder = save_folder
-        self.percentile_pick = 99.99  # 百分位數設定
         self.thick = 2  # bbox bound
         self.overlap = 0.3  # 切割精細度
         # merge 策略 (float)
@@ -49,6 +48,8 @@ class Detector:
         #
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         #
+        # 辨識時允許的最大邊長，如果超出會縮放到最長邊 < ALLOW_MAXSIZE 為止。
+        self.ALLOW_MAXSIZE = 600
         # ====
         #
         self.weight = weight
@@ -133,12 +134,12 @@ class Detector:
         logger.info(f'更新閥值為: {res}, 使用 {percentile} 百分位值')
         return res, percentile
 
-    def check_resize(self, img: np.ndarray, MAXSIZE=600):
+    def check_resize(self, img: np.ndarray):
         logger = logging.getLogger('Detector.check_resize')
         w, h = img.shape[1::-1]
 
-        if not w < MAXSIZE or not h < MAXSIZE:
-            w_ratio, h_ratio = MAXSIZE/w, MAXSIZE/h
+        if not w < self.ALLOW_MAXSIZE or not h < self.ALLOW_MAXSIZE:
+            w_ratio, h_ratio = self.ALLOW_MAXSIZE/w, self.ALLOW_MAXSIZE/h
             w_ratio if w_ratio < h_ratio else h_ratio
             logger.info(f"{self.cursor_img_name} 重新縮放成 w,h:({int(w * w_ratio)}, {int(h * w_ratio)})")
             return cv2.resize(img, (int(w*w_ratio), int(h*w_ratio)))
@@ -336,15 +337,18 @@ class Detector:
 
 if __name__ == "__main__":
 
-    origin_detector = Detector(weight="./log_save/20220421_1341_58/weight.pt", save_folder=LOG_SAVE_FOLDER,
+    origin_detector = Detector(weight="./log_save/20220804_0136_01/weight.pt", save_folder=LOG_SAVE_FOLDER,
              net=qrcnn_model.QRCode_CNN())
 
 
     fname_list = glob.glob("./data_clean/the_real593/*.*")
     cnt = 0
+    import random
 
     for idx in range(20, len(fname_list)):
-        img_path = fname_list[idx]
+        rand_pick = random.randint(0, len(fname_list)-1)
+        # img_path = fname_list[idx]
+        img_path = fname_list[rand_pick]
         origin_detector.multiscale_prediction(img_path)
         origin_detector.plot_result(showit=False)
         cnt += 1
