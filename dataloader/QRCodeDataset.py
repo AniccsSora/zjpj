@@ -17,16 +17,31 @@ class QRCodeDataset(Dataset):
 
         self.img_paths = [fname for fname in glob.glob(pjoin(img_dir, '*'))]
         self.img_labels = self.read_yolo_labels()
+        self.MAXSIZE = 600
+        print(f"ALLOW MAXSIZE = {self.MAXSIZE}")
 
         assert len(self.img_paths) == len(self.img_labels)
 
     def __len__(self):
         return len(self.img_labels)
 
+    def resize(self, img):
+        w, h = img.shape[1::-1]
+
+        if not w < self.MAXSIZE or not h < self.MAXSIZE:
+            w_ratio, h_ratio = self.MAXSIZE / w, self.MAXSIZE / h
+            w_ratio if w_ratio < h_ratio else h_ratio
+            return cv2.resize(img, (int(w * w_ratio), int(h * w_ratio)))
+        return img
+
     def __getitem__(self, idx):
         image_path = self.img_paths[idx]
         image_name = image_path.replace('\\', '/').split('/')[-1].split('.')[0]
         image = cv2.imread(image_path, cv2.COLOR_BGR2GRAY)
+        if image is None:
+            print(image_path, ", 此檔案為 NoneType.")
+            return
+        image = self.resize(image)
         return self.img_labels[idx], image, image_name
 
     def read_yolo_labels(self):
