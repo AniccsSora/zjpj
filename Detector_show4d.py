@@ -254,8 +254,17 @@ class Detector:
         self.with_merged_bbox_multi_images = []  # 存放被 merge 過的 bbox 的 multiple scaling images
         self.with_merged_bbox_and_corresponding_img = dict().fromkeys(self.scale_list, None)  # 存放 merged 後的 框框 與對應的圖片
 
+        # 製作後續要優化的 合成bbox 完成之框，並記錄下來
+        for scale_val in self.scale_list:
+            self.with_merged_bbox_and_corresponding_img[scale_val] = \
+                dict({"bbox": [],
+                       "img": None
+                       })  # 紀錄合成完畢的 bboxes
+
         for scale_val in self.scale_list:
             image = multiple_scalling_imgs[scale_val]
+            self.with_merged_bbox_and_corresponding_img[scale_val]['img']=\
+                np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
             image_ = np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
             image_m_ = np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))  # np.array(image)
             # 一五一十地畫出來
@@ -265,11 +274,6 @@ class Detector:
             for xyxy in merge_bboxes(pick_xyxy_dict[scale_val],
                                      delta_x=self.merge_delta_x,
                                      delta_y=self.merge_delta_y):
-                # 製作後續要優化的 合成bbox 完成之框，並記錄下來
-                if self.with_merged_bbox_and_corresponding_img[scale_val] is None:
-                    self.with_merged_bbox_and_corresponding_img[scale_val] = dict({"bbox": [],
-                                                                                   "img": np.array(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR))
-                                                                                   })  # 紀錄合成完畢的 bboxes
                 self.with_merged_bbox_and_corresponding_img[scale_val]["bbox"].append(xyxy)
                 cv2.rectangle(image_m_, xyxy[0:2], xyxy[2:], color=(0, 255, 0), thickness=self.thick)
             self.with_bbox_multi_images.append(image_)
@@ -357,7 +361,7 @@ class Detector:
 
 if __name__ == "__main__":
 
-    origin_detector = Detector(weight="./log_save/20220805_1812_19/weight.pt", save_folder=LOG_SAVE_FOLDER,
+    origin_detector = Detector(weight="./50weight.pt", save_folder=LOG_SAVE_FOLDER,
              net=qrcnn_model.QRCode_CNN())
 
 
