@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import glob
-from Detector import Detector
 import logging
 import model as qrcnn_model
 import torch
@@ -69,7 +68,7 @@ if __name__ == "__main__":
     #
 
     # 檢測 img path
-    detection_root = r"./data/raw_qr"
+    detection_root = r"./data_clean/the_real593"
     img_list = glob.glob(detection_root+'/*.*')
 
     bboxes_res = None
