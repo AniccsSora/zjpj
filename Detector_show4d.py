@@ -128,8 +128,15 @@ class Detector:
         else:
             logger.info(f'[debug]: 過濾閥值 "沒有" 均大於 0.5')
         res = np.percentile(p_list, percentile)
+        max_limit = 20
+        origin_percentile = percentile
+        cnt = 0
         while res >= 1.0:
-            percentile -= 0.01  # 需要重新審視
+            cnt += 1
+            if cnt > max_limit:
+                res = np.percentile(p_list, origin_percentile)
+                break
+            percentile -= 1
             try:
                 res = np.percentile(p_list, percentile)
             except ValueError:
@@ -359,6 +366,40 @@ class Detector:
         plt.clf()
         plt.close()
 
+    def filte_bad_merged_result(self, tolerance=33/40):
+        """
+        過濾掉merge 完很爛的 bbox
+
+        @param tolerance (float):
+            bbox 可以允許的極限比，每個 bbox之 短邊:長邊 之 比值 要大於 tolerance，
+            才會將他回傳。
+
+        @return:
+            dict( [{'bbox':[], 'img': np.ndarray}, ...] )
+        """
+        assert self.with_merged_bbox_and_corresponding_img is not None  # 請先執行 multiscale_prediction
+
+        self.with_BEST_merged_bbox_and_corresponding_img = dict().fromkeys(self.scale_list, None)
+
+        for sc in self.scale_list:
+            #
+            bbox_tati = self.with_merged_bbox_and_corresponding_img[sc]['bbox']
+            tar_img = self.with_merged_bbox_and_corresponding_img[sc]['img'].copy()
+            # build 答案
+            self.with_BEST_merged_bbox_and_corresponding_img[sc] = dict({"bbox": [], "img":  tar_img})
+            if len(bbox_tati) == 0:
+                continue
+            else:
+                for box in bbox_tati:
+                    _w, _h = abs(box[0]-box[2]), abs(box[1]-box[3])  # abs(x1-x2), abs(y1-y2)
+                    big, small = _w, _h
+                    if _h > _w:
+                        big, small = _h, _w
+                    if (small/big) >= tolerance:
+                        self.with_BEST_merged_bbox_and_corresponding_img[sc]['bbox'].append(box)
+                    else:
+                        pass
+
 if __name__ == "__main__":
 
     origin_detector = Detector(weight="./50weight.pt", save_folder=LOG_SAVE_FOLDER,
@@ -369,14 +410,15 @@ if __name__ == "__main__":
     cnt = 0
     import random
 
-    for idx in range(20, len(fname_list)):
-        rand_pick = random.randint(0, len(fname_list)-1)
-        # img_path = fname_list[idx]
-        img_path = fname_list[rand_pick]
+    for idx in range(0, len(fname_list)):
+        # rand_pick = random.randint(0, len(fname_list)-1)  # for random
+        img_path = fname_list[idx]
+        # img_path = fname_list[rand_pick] # for random
         origin_detector.multiscale_prediction(img_path)
-        print(len(origin_detector.with_merged_bbox_and_corresponding_img[0.5]['bbox']))
         origin_detector.plot_result(showit=False)
-        cnt += 1
-        if cnt > 20:
-            break
+        origin_detector.filte_bad_merged_result()  # 把長寬比不足篩掉，篩完後要處理  origin_detector.with_BEST_merged_bbox_and_corresponding_img
+        print()
+        # cnt += 1
+        # if cnt > 20:
+        #     break
 
