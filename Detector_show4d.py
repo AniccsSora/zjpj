@@ -366,6 +366,49 @@ class Detector:
         plt.clf()
         plt.close()
 
+        ###  繪製 '優化過的' merge bbox 版本
+        try:
+            self.with_BEST_merged_bbox_and_corresponding_img
+        except AttributeError as err:
+            print("*" * 20)
+            print("請先執行 filte_bad_merged_result()，再執行 plot_result(), 錯誤訊息如下:")
+            print(err)
+        fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+        fig.canvas.manager.set_window_title("多尺度預測結果_篩選過 bbox 的版本")
+        fig.suptitle('Best Merge BBox result', fontsize=12)
+        # --
+        _W_ = self.with_BEST_merged_bbox_and_corresponding_img  # 變數變換
+        # 把 _W_，本來是 key 取值的方式轉成 0~n
+        _img_keyV = [_ for _ in self.scale_list]
+        for i, axi in enumerate(ax.flat):
+            # i runs from 0 to (nrows*ncols-1)
+            # axi is equivalent with ax[rowid][colid]
+            _img_keyName = _img_keyV[i]
+            img = self.with_BEST_merged_bbox_and_corresponding_img[_img_keyName]['img']
+            opti_bbox = self.with_BEST_merged_bbox_and_corresponding_img[_img_keyName]['bbox']
+            image_have_bbox = img.copy()
+            for xyxy in opti_bbox:
+                cv2.rectangle(image_have_bbox, xyxy[0:2], xyxy[2:], color=(0, 255, 0), thickness=self.thick)
+
+            axi.imshow(image_have_bbox, alpha=1.0, cmap=plt.get_cmap('gray'))
+            if self.auto_thres:
+                # 使用動態thres 需要印出更詳細數值
+                cur_scale = self.scale_list[i]
+                _percentile = str(self.percent_pick_dict[cur_scale])  # 使用的百分位數
+                _thres_P = str(self.percent_pick_predictP_dict[cur_scale])  # 百分位數對應的閥值
+                ss_percentile = "{:.0f}".format(Decimal(str(_percentile)))
+                ss_thres_P = "{:E}".format(Decimal(str(_thres_P)))
+                axi.set_title(f"Scale: {str(cur_scale)}, percentile:({ss_percentile})\n={ss_thres_P}")
+            else:
+                axi.set_title(f"Scale: {str(self.scale_list[i])}")
+        plt.tight_layout()
+        plt.savefig(Path(self.save_folder).joinpath(f'{self.cursor_img_name}_Best_merge_ver.png'))
+
+        if showit:
+            plt.show()
+        plt.clf()
+        plt.close()
+
     def filte_bad_merged_result(self, tolerance=33/40):
         """
         過濾掉merge 完很爛的 bbox
@@ -415,9 +458,9 @@ if __name__ == "__main__":
         img_path = fname_list[idx]
         # img_path = fname_list[rand_pick] # for random
         origin_detector.multiscale_prediction(img_path)
-        origin_detector.plot_result(showit=False)
         origin_detector.filte_bad_merged_result()  # 把長寬比不足篩掉，篩完後要處理  origin_detector.with_BEST_merged_bbox_and_corresponding_img
-        print()
+        origin_detector.plot_result(showit=False)
+
         # cnt += 1
         # if cnt > 20:
         #     break
