@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import glob
+import os
 import logging
 import model as qrcnn_model
 import torch
@@ -14,6 +15,9 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from misc.F import ensure_folder, timestamp
+from pathlib import Path
+from PIL import Image
+
 
 LOG_SAVE_FOLDER = f"log_save/{timestamp()}"
 
@@ -30,10 +34,13 @@ def draw_bbox(bboxes, img, draw_p, show_p = True):
     @param draw_p: float, 大於該機率才繪製圖案
     @return: 畫好 box 的 img
     """
-    line_color = (0, 0, 255)  # BGR
+    line_color = (0, 255, 0)  # BGR
 
     if isinstance(img, str):
-        img = cv2.imread(img, cv2.IMREAD_COLOR)
+        #img = cv2.imread(img, cv2.IMREAD_COLOR)
+        img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+        img = np.array(cv2.cvtColor(img, cv2.COLOR_GRAY2BGR))
+
 
     for bbox in bboxes:
         x1, y1, x2, y2, p, _ = bbox
@@ -70,16 +77,24 @@ if __name__ == "__main__":
     # 檢測 img path
     detection_root = r"./data_clean/the_real593"
     img_list = glob.glob(detection_root+'/*.*')
-
+    _save_pth = Path(os.getcwd()).joinpath(LOG_SAVE_FOLDER)
+    print("SAVE PATH:", _save_pth)
     bboxes_res = None
     bboxex_results = []
     for im in img_list:
         bboxes_res = detect_img(im)
 
         # draw box
-        have_box_img = draw_bbox(bboxes_res, im, draw_p=0.5, show_p=True)
+        have_box_img = draw_bbox(bboxes_res, im, draw_p=0.5, show_p=False)
 
         bboxex_results.append(have_box_img)
 
-    plt.imshow(bboxex_results[0])
-    plt.show()
+    for idx, img in enumerate(bboxex_results):
+        fn = Path(img_list[idx]).stem
+        plt.imshow(bboxex_results[idx], alpha=1.0, cmap=plt.get_cmap('gray'))
+        plt.savefig(_save_pth.joinpath(f"{fn}_save.png"))
+        plt.cla()
+
+
+
+
