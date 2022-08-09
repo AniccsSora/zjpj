@@ -6,7 +6,8 @@ from PIL import Image
 import PIL
 from pyzbar.pyzbar import decode as zb_decoder
 import imagehash
-
+import numpy as np
+import cv2
 
 class QRCleaner:
     def __init__(self, source_path):
@@ -91,6 +92,48 @@ class QRCleaner:
             if len(results1) != 0:
                 img.save(dist_dir.joinpath(f"{idx}.png"))
 
+    def detectQR_and_resaveValidQR_ver2(self, src_dir, dist_dir, dist_dir_failed):
+        """
+        將會另存 掃描失敗、掃描成功 之 qrcode 到另外的資料夾。
+        @param src_dir: 圖片來源
+        @param dist_dir: 掃描成功放置處
+        @param dist_dir_failed: 掃描失敗放置處
+        @return: 不回傳
+        """
+
+        src_dir = self._rebuild_path(src_dir)
+        dist_dir = self._rebuild_path(dist_dir)
+        dist_dir_failed = self._rebuild_path(dist_dir_failed)
+
+        os.makedirs(dist_dir, exist_ok=True)
+        os.makedirs(dist_dir_failed, exist_ok=True)
+
+        _ = [_ for _ in src_dir.rglob('*.*')]
+
+        error_log = "error_detect_log.txt"
+        if os.path.exists(error_log):
+            os.remove(error_log)
+
+        pbar = tqdm.tqdm(range(0, len(_)))
+
+        for idx in pbar:
+            ipath = _[idx]
+            try:
+                pbar.set_description("{}:{}".format(idx, ipath.name))
+                img = Image.open(ipath)
+                results1 = zb_decoder(img)
+            except Exception as e:
+                with open(error_log, "a") as f:
+                    print("error:", ipath)
+                    print(f"{ipath}\n", file=f)
+                continue
+
+            #results2 = zxing_decoder.decode(ipath)
+            if len(results1) != 0:
+                img.save(dist_dir.joinpath(f"{idx}.png"))
+            else:
+                img.save(dist_dir_failed.joinpath(f"{idx}.png"))
+
     def check_duplicated(self, tar_dir, save_dir, exist_ok=False):
         src_dir = self._rebuild_path(tar_dir)
         save_dir = self._rebuild_path(save_dir)
@@ -157,6 +200,35 @@ class QRCleaner:
         return res
     #python labelImg.py D:\Git\zjpj\data_clean\non_duplicated  D:\Git\zjpj\data_clean\label_xywh
 
+    def check_resize(self, img: np.ndarray, ALLOW_MAXSIZE=600):
+        w, h = img.shape[1::-1]
+
+        if not w < ALLOW_MAXSIZE or not h < ALLOW_MAXSIZE:
+            w_ratio, h_ratio = ALLOW_MAXSIZE/w, ALLOW_MAXSIZE/h
+            w_ratio if w_ratio < h_ratio else h_ratio
+            return cv2.resize(img, (int(w*w_ratio), int(h*w_ratio)))
+        return img
+
+    def resize_all(self, tar, resave):
+        tar = self._rebuild_path(tar)
+        resave = self._rebuild_path(resave)
+        assert tar.is_dir()
+        os.makedirs(resave, exist_ok=True)
+
+        _ = [_ for _ in tar.rglob('*.*')]
+
+        error_log = "error_detect_log.txt"
+        if os.path.exists(error_log):
+            os.remove(error_log)
+
+        pbar = tqdm.tqdm(range(0, len(_)))
+
+        for idx in pbar:
+            ipath = _[idx]
+            img = cv2.imread(str(ipath))
+            img = self.check_resize(img, ALLOW_MAXSIZE=600)
+            img_rePth = resave.joinpath(f"{ipath.stem}.png")
+            cv2.imwrite(str(img_rePth), img)
 
 if __name__ == "__main__":
 
