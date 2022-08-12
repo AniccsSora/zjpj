@@ -12,6 +12,8 @@ import math
 from datetime import datetime
 import logging
 from pathlib import Path
+from tqdm import tqdm
+
 
 def dataset_split(dir, train=0.7, valid=0.3, image_format=['png', 'jpeg', 'jpg'],
                   labels_format=['txt'], train_dir='train', valid_dir='valid',
@@ -276,6 +278,12 @@ def get_BoundingBoxes(bboxeslist):
 def ensure_folder(folder_path, remake=False, logger=None):
     """
     確保某個資料夾必定存在，因為會重新建立。
+
+    @param folder_path:
+        要建立的資料夾名。
+
+    @param remake: (Default False)
+        如果為 True，會刪除舊的目錄再重新建立。
     """
     if os.path.isdir(folder_path):
         if not remake:
@@ -437,6 +445,54 @@ def set_logger(path=None):
     # 為 root logger 加入 handler
     logging.getLogger('').addHandler(console)
 
+
+def zero_fill_file_in_the_folder(tar_folder, zfill_len, resave_folder=None, sub_len=3):
+    """
+    zfill 資料夾下的案。
+
+    @param tar_folder: (FOLDER_PATH)
+        要檔名的目標資料夾。
+
+    @param zfill_len: (int)
+        檔名的 zfill() 長度，使用 zfill函式，不包含 '.'與其副檔名的長度。
+
+    @param resave_folder: (None, FOLDER_PATH)
+        Default None.
+        如果為 None 直接在目錄下改名。
+        否則另存在另外的資料夾下。
+
+    @param sub_len: (int)
+        Default 3.
+        副檔名最大長度。
+    @return: 不回傳直接改。
+    """
+    assert Path(tar_folder).is_dir()
+
+    if resave_folder:
+        ensure_folder(resave_folder)
+
+
+    _abs_path = str(Path(tar_folder).joinpath("*.*"))
+    pbar = tqdm(glob(_abs_path))
+
+    for fn in pbar:
+        pbar.set_description("Processing %s" % fn)
+        origin_path = Path(fn)
+        if origin_path.stem[0] == '0':  # 如果檔名的第一個字是零
+            print(f"{fn}, 不改名因為 開頭為0.")
+            continue
+        origin_dir = origin_path.parent
+        origin_fn = origin_path.name
+        target_dir = origin_path.parent
+        resave_fn = origin_path.name.zfill(zfill_len+sub_len+1)
+
+        if resave_folder is None:
+            os.rename(src=origin_dir.joinpath(origin_fn),
+                      dst=target_dir.joinpath(resave_fn))
+        else:
+            new_dir = Path(resave_folder)
+            os.rename(src=origin_dir.joinpath(origin_fn),
+                      dst=new_dir.joinpath(resave_fn))
 
 if __name__ == "__main__":
     remove_negative_bbox(r"D:\git-repo\ZhangJiaPJ\log_XD\20210520_2206")
