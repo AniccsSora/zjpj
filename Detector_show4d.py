@@ -1,4 +1,7 @@
 import logging
+import os.path
+import json
+import copy
 import model as qrcnn_model
 import torch
 from misc.F import set_logger
@@ -12,6 +15,9 @@ import matplotlib as mpl
 from misc.F import ensure_folder, timestamp
 from pathlib import Path
 from decimal import Decimal
+from tqdm import tqdm
+import matplotlib
+matplotlib.use('Agg')
 
 LOG_SAVE_FOLDER = f"log_save/{timestamp()}"
 
@@ -72,6 +78,10 @@ class Detector:
         res_dict = dict.fromkeys(self.scale_list)
         for scale in self.scale_list:
             re_w, re_h = int(w * scale), int(h * scale)
+            _cnt = 0
+            while re_w <= 32 or re_h <= 32:
+                _cnt += 1
+                re_w, re_h = int(w * (scale+0.05*_cnt)), int(h * (scale+0.05*_cnt))
             img_gauBr = cv2.GaussianBlur(img, (5, 5), 3)
             # img_bil = cv2.bilateralFilter(img, 9, 75, 75)
             res_dict[scale] = cv2.resize(img_gauBr, dsize=(re_w, re_h), interpolation=cv2.INTER_AREA)
@@ -166,11 +176,14 @@ class Detector:
         @return:
         """
         logger = logging.getLogger("Detector.multiscale_prediction")
+        assert Path(image_path).is_file()
         pred_img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        assert pred_img is not None
         self.cursor_img_name = Path(image_path).stem  # 處理到目前的檔名
         pred_img = self.check_resize(pred_img)
         #
         multiple_scalling_imgs = self.scalling_img(pred_img)
+        # self.scalling_img(pred_img)[0.25].shape
         #
         multiple_patch_xyxy = self.get_xyxy_generator_dict(multiple_scalling_imgs)
         #
@@ -214,9 +227,9 @@ class Detector:
             # scale_val尺度下所預測為該 label 期望值
             all_pred_pr = pred_label_p_dict[scale_val]
             # 取得 label == 1 的 args
-            qr_label_indices = np.squeeze(np.argwhere(pred_label_dict[scale_val] == 1))
+            qr_label_indices = np.atleast_1d(np.squeeze(np.argwhere(pred_label_dict[scale_val] == 1)))
             # 預選框數量
-            preselection_number_dict[scale_val] = len(qr_label_indices)
+            preselection_number_dict[scale_val] = len(np.atleast_1d(qr_label_indices))
             # 拿出他的 xyxy
             _xyxy_tmp_ = []
             # 決定是否使用自動閥值
@@ -332,8 +345,9 @@ class Detector:
         if showit:
             pass
         else:
-            plt.clf()
             plt.close()
+            plt.cla()
+            plt.clf()
 
         # 繪製 merge bbox 版本
         fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
@@ -362,9 +376,11 @@ class Detector:
         plt.tight_layout()
         plt.savefig(Path(self.save_folder).joinpath(f'{self.cursor_img_name}_detection_merge_ver.png'))
         if showit:
-            plt.show()
-        plt.clf()
-        plt.close()
+            pass
+        else:
+            plt.close()
+            plt.cla()
+            plt.clf()
 
         ###  繪製 '優化過的' merge bbox 版本
         try:
@@ -405,9 +421,74 @@ class Detector:
         plt.savefig(Path(self.save_folder).joinpath(f'{self.cursor_img_name}_Best_merge_ver.png'))
 
         if showit:
-            plt.show()
-        plt.clf()
+            pass
+        else:
+            plt.close()
+            plt.cla()
+            plt.clf()
+
+        # 總是關閉
         plt.close()
+        plt.cla()
+        plt.clf()
+
+        # 將 過濾後的 bbox 位置存到txt
+        self.write_bbox_to_txt()
+
+    @staticmethod
+    def xyxy2yolo(w, h, x1, y1, x2, y2):
+
+        yl_w = abs(x1 - x2) / w
+        yl_h = abs(y1 - y2) / h
+        yl_x = (x1 + abs(x1 - x2)/2) / w
+        yl_y = (y1 + abs(y1 - y2)/2) / h
+
+        return float("{:.18f}".format(yl_x)), \
+               float("{:.18f}".format(yl_y)), \
+               float("{:.18f}".format(yl_w)), \
+               float("{:.18f}".format(yl_h))
+
+    @staticmethod
+    def yolo2xyxy(w, h, yolo_x, yolo_y, yolo_w, yolo_h):
+        img_w, img_h = int(w*yolo_w), int(h*yolo_h)  # 圖片 寬 高
+        half_w, half_h = img_w//2, img_h//2  # 圖片的 半寬 半高
+
+        x1 = int(yolo_x * w) - half_w
+        y1 = int(yolo_y * h) - half_h
+        x2 = int(yolo_x * w) + half_w
+        y2 = int(yolo_y * h) + half_h
+
+        assert x1 < x2 and y1 < y2
+
+        return x1, y1, x2, y2
+
+    def write_bbox_to_txt(self):
+        """
+        把 方框(bbox_set) 的 bbox 轉成 yolo box 格式，並寫到檔案裡面。
+        """
+        _ = copy.deepcopy(self.with_BEST_merged_bbox_and_corresponding_img)
+        #  後續都針對 _ 做操作
+
+        # bbox 計算成 yolo.
+        for scale in self.scale_list:
+            res = []
+            for x1, y1, x2, y2 in _[scale]['bbox']:
+                w, h = _[scale]['img'].shape[1::-1]
+                yl_x, yl_y, yl_w, yl_h = self.xyxy2yolo(w, h, x1, y1, x2, y2)
+                res.append([yl_x, yl_y, yl_w, yl_h])
+
+            _[scale]['bbox'] = res
+
+        # ['img'] 的 ndarray 設定成 shape.
+        for scale in self.scale_list:
+            _[scale]['img'] = _[scale]['img'].shape
+        _.update({"fn": self.cursor_img_name})  # 寫入檔名
+        # 這是印出用的
+        # json_object = json.dumps(_, indent=4)
+        save_path = self.save_folder
+        fn = self.cursor_img_name
+        with open(Path(save_path).joinpath(f"{fn}_merged_best_bbox.txt"), mode='w', encoding='utf-8') as f:
+            json.dump(_, f, indent=4)
 
     def filte_bad_merged_result(self, tolerance=33/40):
         """
@@ -442,6 +523,27 @@ class Detector:
                         self.with_BEST_merged_bbox_and_corresponding_img[sc]['bbox'].append(box)
                     else:
                         pass
+    @staticmethod
+    def xyxyBox_IOU(w, h, xyxy1, xyxy2):
+        x1,  y1,  x2,  y2 = xyxy1
+        x1p, y1p, x2p, y2p = xyxy2
+        assert x1 < x2 and y1 < y2
+        assert x1p < x2p and y1p < y2p
+        x_type1_in_bound = (x1 < x1p < x2) or (x1 < x2p < x2)  # 交錯
+        x_type2_in_bound = (x1 < x1p < x2p < x2) or (x1p < x1 < x2 < x2p)  # 包覆
+        y_type1_in_bound = (y1 < y1p < y2) or (y1 < y2p < y2)  # 交錯
+        y_type2_in_bound = (y1 < y1p < y2p < y2) or (y1p < y1 < y2 < y2p)  # 包覆
+
+        x_BOUND = x_type1_in_bound or x_type2_in_bound
+        y_BOUND = y_type1_in_bound or y_type2_in_bound
+
+        IOU_RESULT = 0
+        if x_BOUND and y_BOUND:
+            # calc IOU
+            # TODO
+            pass
+
+        return IOU_RESULT
 
 if __name__ == "__main__":
 
@@ -449,13 +551,16 @@ if __name__ == "__main__":
              net=qrcnn_model.QRCode_CNN())
 
 
-    fname_list = glob.glob("./data_clean/the_real593/*.*")
+    #fname_list = glob.glob("./data_clean/the_real593/*.*")
+    fname_list = glob.glob("./data_clean/NOT_IN_the_real593_DATASET/*.*")
     cnt = 0
     import random
-
-    for idx in range(0, len(fname_list)):
+    pbar = tqdm(fname_list)
+    #for idx in range(0, len(fname_list)):
+    for fn in pbar:
+        pbar.set_description("process: %s" % fn)
         # rand_pick = random.randint(0, len(fname_list)-1)  # for random
-        img_path = fname_list[idx]
+        img_path = fn # fname_list[idx]
         # img_path = fname_list[rand_pick] # for random
         origin_detector.multiscale_prediction(img_path)
         origin_detector.filte_bad_merged_result()  # 把長寬比不足篩掉，篩完後要處理  origin_detector.with_BEST_merged_bbox_and_corresponding_img
