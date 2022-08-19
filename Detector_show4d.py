@@ -177,6 +177,7 @@ class Detector:
         """
         logger = logging.getLogger("Detector.multiscale_prediction")
         assert Path(image_path).is_file()
+        self._origin_colorful_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
         pred_img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         assert pred_img is not None
         self.cursor_img_name = Path(image_path).stem  # 處理到目前的檔名
@@ -300,7 +301,7 @@ class Detector:
             self.with_merged_bbox_multi_images.append(image_m_)
 
 
-    def plot_result(self, showit=True):
+    def plot_result(self, showit=True, plot_dpi=120, plot_figsize=[10, 6]):
         """
         將 預測過的結果 繪製出來
         @return:
@@ -312,9 +313,9 @@ class Detector:
             logger.error("請先呼叫 multiscale_prediction().")
             return
         # === plt show param setting
-        mpl.rcParams["figure.dpi"] = 120  # default: 100
+        mpl.rcParams["figure.dpi"] = plot_dpi
         nrows, ncols = 2, 2  # array of sub-plots
-        figsize = [10, 6]  # figure size, inches
+        figsize = plot_figsize  # figure size, inches
         # create figure (fig), and array of axes (ax)
         fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
         fig.canvas.manager.set_window_title("多尺度預測結果")
@@ -545,14 +546,43 @@ class Detector:
 
         return IOU_RESULT
 
+    def make_beautiful_have_bbox(self):
+        txt_n = glob.glob(self.save_folder+'/*'+self.cursor_img_name+"*.txt")
+        assert len(txt_n) == 1  # Please exec plot_result() before this function
+
+        with open(txt_n[0], encoding='utf-8', mode='r') as f:
+            txt_json = json.load(f)
+        w, h = self._origin_colorful_img.shape[1::-1]
+
+        for scale in self.scale_list:
+            # print("current :", scale)
+            bboxes = txt_json[str(scale)]['bbox']
+            tmp = copy.deepcopy(self._origin_colorful_img)
+            for bbox in bboxes:
+                # print("yolo:", bbox)
+                x1,y1,x2,y2 = self.yolo2xyxy(w, h, bbox[0], bbox[1], bbox[2], bbox[3])
+                assert abs(x1 - x2) <= w
+                assert abs(y1 - y2) <= h
+                # print("xyxy:", x1, y1, x2, y2)
+                # print("bbox size:", abs(x1-x2), abs(y1-y2))
+                cv2.rectangle(tmp, (x1, y1), (x2, y2), (0, 255, 0), 3, cv2.LINE_AA)
+            save_root = Path(self.save_folder).joinpath(f"{self.cursor_img_name}_sc_{scale}.png")
+            cv2.imwrite(str(save_root), tmp)
+
+
 if __name__ == "__main__":
 
     origin_detector = Detector(weight="./50weight.pt", save_folder=LOG_SAVE_FOLDER,
              net=qrcnn_model.QRCode_CNN())
 
+    # 允許最大的圖片解析度(單邊)，可以不給預設 600。
+    origin_detector.ALLOW_MAXSIZE = 9999
 
     #fname_list = glob.glob("./data_clean/the_real593/*.*")
-    fname_list = glob.glob("./data_clean/NOT_IN_the_real593_DATASET/*.*")
+    #fname_list = glob.glob("./data_clean/NOT_IN_the_real593_DATASET/*.*")
+    fname_list = glob.glob("./data_clean/for test/*.*")
+
+
     cnt = 0
     import random
     pbar = tqdm(fname_list)
@@ -564,7 +594,9 @@ if __name__ == "__main__":
         # img_path = fname_list[rand_pick] # for random
         origin_detector.multiscale_prediction(img_path)
         origin_detector.filte_bad_merged_result()  # 把長寬比不足篩掉，篩完後要處理  origin_detector.with_BEST_merged_bbox_and_corresponding_img
-        origin_detector.plot_result(showit=False)
+        origin_detector.plot_result(showit=False, plot_dpi=300, plot_figsize=[15, 10])
+        #origin_detector.plot_result(showit=False)
+        origin_detector.make_beautiful_have_bbox()
 
         # cnt += 1
         # if cnt > 20:
