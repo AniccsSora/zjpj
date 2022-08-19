@@ -75,7 +75,7 @@ if __name__ == "__main__":
     #
 
     # 檢測 img path
-    detection_root = r"./data_clean/the_real593"
+    detection_root = r"./data_clean/NOT_IN_the_real593_DATASET"
     img_list = glob.glob(detection_root+'/*.*')
     _save_pth = Path(os.getcwd()).joinpath(LOG_SAVE_FOLDER)
     print("SAVE PATH:", _save_pth)
