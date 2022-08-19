@@ -494,8 +494,41 @@ def zero_fill_file_in_the_folder(tar_folder, zfill_len, resave_folder=None, sub_
             os.rename(src=origin_dir.joinpath(origin_fn),
                       dst=new_dir.joinpath(resave_fn))
 
+def move_file_to_mkdir(key_word, scan_root_dir, dis_dir, in_same_folder=True):
+    """
+    @param key_word: 要掃描的檔名特徵。
+    @param scan_dir: 要掃描的 root dir.
+    @param dis_dir: 在 root dir 下的檔案要被丟到 dis_dir
+    @return: None
+    """
+    assert os.path.isdir(scan_root_dir)
+    assert os.path.isdir(dis_dir)
+
+    if in_same_folder:
+        dis_dir = Path(scan_root_dir).joinpath(dis_dir)
+    else:
+        dis_dir = Path(dis_dir) if Path(dis_dir).is_absolute() else Path(os.getcwd()).joinpath(dis_dir)
+
+    print(f"\nNew \'{dis_dir}\'")
+    ensure_folder(dis_dir)
+
+    filesPth = []
+    for fn in glob(f"{scan_root_dir}/*{key_word}*"):
+        filesPth.append(fn)
+    print(f"Find {len(filesPth)} file(s).")
+
+    pbar = tqdm(filesPth)
+    for src_path in pbar:
+        pbar.set_description("Current: {}".format(Path(src_path).name))
+        file_name = Path(src_path).name
+        shutil.copyfile(src_path, dis_dir.joinpath(file_name))
+
+
 if __name__ == "__main__":
-    remove_negative_bbox(r"D:\git-repo\ZhangJiaPJ\log_XD\20210520_2206")
+    scan_root = r"D:\git-repo\zjpj\log_save\2022-08-12_PM_08h15m31s_原有MODEL辨識的結果 (Validation 版)"
+    dis_dir = "haha"
+    move_file_to_mkdir("Best_merge_ver", scan_root, dis_dir)
+    # remove_negative_bbox(r"D:\git-repo\ZhangJiaPJ\log_XD\20210520_2206")
 
     # print(command_gen(aug_number=10, epochs=300, name='aug',
     #             data="train_my_qr.yaml",
