@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from misc.F import ensure_folder, timestamp
 from pathlib import Path
 from PIL import Image
+from tqdm import tqdm
 
 
 LOG_SAVE_FOLDER = f"log_save/{timestamp()}"
@@ -81,15 +82,20 @@ if __name__ == "__main__":
     print("SAVE PATH:", _save_pth)
     bboxes_res = None
     bboxex_results = []
-    for im in img_list:
-        bboxes_res = detect_img(im)
 
+    pbar = tqdm(img_list)
+    for im in pbar:
+        pbar.set_description("Draw bbox: ")
+
+        bboxes_res = detect_img(im)
         # draw box
         have_box_img = draw_bbox(bboxes_res, im, draw_p=0.5, show_p=False)
 
         bboxex_results.append(have_box_img)
 
-    for idx, img in enumerate(bboxex_results):
+    pbar = tqdm(bboxex_results)
+    for idx, img in enumerate(pbar):
+        pbar.set_description("Save Image: ")
         fn = Path(img_list[idx]).stem
         plt.imshow(bboxex_results[idx], alpha=1.0, cmap=plt.get_cmap('gray'))
         plt.savefig(_save_pth.joinpath(f"{fn}_save.png"))
