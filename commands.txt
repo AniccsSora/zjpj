@@ -1,0 +1,2 @@
+# 在筆電上的啟動 labelImg (validation data)
+python labelImg.py D:\git-repo\zjpj\data_clean\NOT_IN_the_real593_DATASET D:\git-repo\zjpj\data_clean\yolo_label_NOT_IN_the_real593_DATASET\classes.txt
