@@ -525,26 +525,21 @@ class Detector:
                     else:
                         pass
     @staticmethod
-    def xyxyBox_IOU(w, h, xyxy1, xyxy2):
-        x1,  y1,  x2,  y2 = xyxy1
-        x1p, y1p, x2p, y2p = xyxy2
-        assert x1 < x2 and y1 < y2
-        assert x1p < x2p and y1p < y2p
-        x_type1_in_bound = (x1 < x1p < x2) or (x1 < x2p < x2)  # 交錯
-        x_type2_in_bound = (x1 < x1p < x2p < x2) or (x1p < x1 < x2 < x2p)  # 包覆
-        y_type1_in_bound = (y1 < y1p < y2) or (y1 < y2p < y2)  # 交錯
-        y_type2_in_bound = (y1 < y1p < y2p < y2) or (y1p < y1 < y2 < y2p)  # 包覆
-
-        x_BOUND = x_type1_in_bound or x_type2_in_bound
-        y_BOUND = y_type1_in_bound or y_type2_in_bound
-
-        IOU_RESULT = 0
-        if x_BOUND and y_BOUND:
-            # calc IOU
-            # TODO
-            pass
-
-        return IOU_RESULT
+    def xyxyBox_IOU(boxA, boxB):
+        # 使用 xyxy 座標，單位統一即可
+        xA = max(boxA[0], boxB[0])
+        yA = max(boxA[1], boxB[1])
+        xB = min(boxA[2], boxB[2])
+        yB = min(boxA[3], boxB[3])
+        # 計算兩個正方形的交集面積
+        interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+        # 分別計算兩個正方形的面積
+        boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+        boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+        # 交集 / 聯集
+        iou = interArea / float(boxAArea + boxBArea - interArea)
+        # return the intersection over union value
+        return iou
 
     def make_beautiful_have_bbox(self):
         txt_n = glob.glob(self.save_folder+'/*'+self.cursor_img_name+"*.txt")
@@ -569,6 +564,26 @@ class Detector:
             save_root = Path(self.save_folder).joinpath(f"{self.cursor_img_name}_sc_{scale}.png")
             cv2.imwrite(str(save_root), tmp)
 
+    def detect_nrom_bbox(self, image_path, default_pick=2):
+        self.multiscale_prediction(image_path)
+        self.filte_bad_merged_result()
+        default_sc = self.scale_list[default_pick]
+        if len(self.with_BEST_merged_bbox_and_corresponding_img[default_sc]['bbox']) == 0:
+            max = 0
+            tmp_sc = default_sc
+            for default_pick in self.scale_list:
+                tmp = len(self.with_BEST_merged_bbox_and_corresponding_img[default_sc]['bbox'])
+                if tmp > max:
+                    tmp_sc = default_sc
+            print(f"return ({tmp_sc}) one.")
+
+            w, h = self.with_BEST_merged_bbox_and_corresponding_img[tmp_sc]['img'].shape[1::-1]
+            bboxssss = self.with_BEST_merged_bbox_and_corresponding_img[tmp_sc]['bbox']
+            return [(box[0]/w, box[1]/h, box[2]/w, box[3]/h) for box in bboxssss]
+        else:
+            w, h = self.with_BEST_merged_bbox_and_corresponding_img[default_sc]['img'].shape[1::-1]
+            bboxssss = self.with_BEST_merged_bbox_and_corresponding_img[default_sc]['bbox']
+            return [(box[0]/w, box[1]/h, box[2]/w, box[3]/h) for box in bboxssss]
 
 if __name__ == "__main__":
 
@@ -580,8 +595,9 @@ if __name__ == "__main__":
 
     #fname_list = glob.glob("./data_clean/the_real593/*.*")
     #fname_list = glob.glob("./data_clean/NOT_IN_the_real593_DATASET/*.*")
-    fname_list = glob.glob("./data_clean/for test/*.*")
 
+    #fname_list = glob.glob("./data_clean/for test/*.*")
+    fname_list = glob.glob("./data_clean/IoU_test_image/*.*")
 
     cnt = 0
     import random
@@ -589,16 +605,12 @@ if __name__ == "__main__":
     #for idx in range(0, len(fname_list)):
     for fn in pbar:
         pbar.set_description("process: %s" % fn)
-        # rand_pick = random.randint(0, len(fname_list)-1)  # for random
         img_path = fn # fname_list[idx]
-        # img_path = fname_list[rand_pick] # for random
         origin_detector.multiscale_prediction(img_path)
         origin_detector.filte_bad_merged_result()  # 把長寬比不足篩掉，篩完後要處理  origin_detector.with_BEST_merged_bbox_and_corresponding_img
         origin_detector.plot_result(showit=False, plot_dpi=300, plot_figsize=[15, 10])
-        #origin_detector.plot_result(showit=False)
         origin_detector.make_beautiful_have_bbox()
+        #
+        #origin_detector.detect_nrom_bbox(img_path)
 
-        # cnt += 1
-        # if cnt > 20:
-        #     break
 

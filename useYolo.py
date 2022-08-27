@@ -8,17 +8,25 @@ wp = './exp2_補500張e100_arg_high/weights/best.pt'
 model = torch.hub.load('ultralytics/yolov5', 'custom', wp, verbose=False)
 
 
-def get_xyxy(img):
+def get_xyxy(img, norm=False):
     #assert isinstance(img, str)
     result = model(img)
 
+    w, h = cv2.imread(img).shape[1::-1]
     xyxypc_res = []
     for xyxys in result.xyxy:
         for xyxy in xyxys:  # 一張圖片的判斷結果
             cpu_xyxy = xyxy.detach().cpu().numpy()
             x1, y1, x2, y2, p, cls_idx = cpu_xyxy
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-            xyxypc_res.append((x1, y1, x2, y2, p, cls_idx))
+            if not norm:
+                xyxypc_res.append((x1, y1, x2, y2, p, cls_idx))
+            else:
+                assert x1 / w <= 1
+                assert y1 / h <= 1
+                assert x2 / w <= 1
+                assert y2 / h <= 1
+                xyxypc_res.append((x1/w, y1/h, x2/w, y2/h, p, cls_idx))
     # p:機率, c:類別名
     return xyxypc_res
 
