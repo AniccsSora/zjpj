@@ -1,9 +1,9 @@
 !data/background_patch/*.bmp
 !log_save/*
 
-new_background/*
-the_real593_patches/*
-exp2_補500張e100_arg_high/*
+new_background/
+the_real593_patches/
+exp2_補500張e100_arg_high/
 *.zip
 *.png
 *.jpg
