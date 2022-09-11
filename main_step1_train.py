@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     # QRCode patch 資料夾
     # QRCode_patch_dir_root = './data/pathes_of_qrcode_32x32'  # 裡面參雜一些很不像 QRCode 的patch
-    QRCode_patch_dir_root = "./data_clean/the_real593_patches"  # './data/manual_pick_QRcode_Patch'
+    QRCode_patch_dir_root = "./data_clean/the_real593_patches/filter_OK"  # './data/manual_pick_QRcode_Patch'
 
     # 背景 patch 資料夾
     Background_patch_dir_root = "./data_clean/new_background"  # './data/background_patch'

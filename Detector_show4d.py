@@ -532,10 +532,10 @@ class Detector:
         xB = min(boxA[2], boxB[2])
         yB = min(boxA[3], boxB[3])
         # 計算兩個正方形的交集面積
-        interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+        interArea = max(0, xB - xA + 0) * max(0, yB - yA + 0)
         # 分別計算兩個正方形的面積
-        boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
-        boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+        boxAArea = (boxA[2] - boxA[0] + 0) * (boxA[3] - boxA[1] + 0)
+        boxBArea = (boxB[2] - boxB[0] + 0) * (boxB[3] - boxB[1] + 0)
         # 交集 / 聯集
         iou = interArea / float(boxAArea + boxBArea - interArea)
         # return the intersection over union value
@@ -556,8 +556,9 @@ class Detector:
             for bbox in bboxes:
                 # print("yolo:", bbox)
                 x1,y1,x2,y2 = self.yolo2xyxy(w, h, bbox[0], bbox[1], bbox[2], bbox[3])
-                assert abs(x1 - x2) <= w
-                assert abs(y1 - y2) <= h
+                # print("xyxy:", x1, y1, x2, y2)
+                # assert abs(x1 - x2) <= w
+                # assert abs(y1 - y2) <= h
                 # print("xyxy:", x1, y1, x2, y2)
                 # print("bbox size:", abs(x1-x2), abs(y1-y2))
                 cv2.rectangle(tmp, (x1, y1), (x2, y2), (0, 255, 0), 3, cv2.LINE_AA)
@@ -587,7 +588,7 @@ class Detector:
 
 if __name__ == "__main__":
 
-    origin_detector = Detector(weight="./50weight.pt", save_folder=LOG_SAVE_FOLDER,
+    origin_detector = Detector(weight="./50weight_type829.pt", save_folder=LOG_SAVE_FOLDER,
              net=qrcnn_model.QRCode_CNN())
 
     # 允許最大的圖片解析度(單邊)，可以不給預設 600。

@@ -178,6 +178,7 @@ def train(dataloader, net, lr, epochs, weight=None,
         torch.save(net.state_dict(), f"{draw}/weight_{epoch+1}.pt")
         if os.path.exists(f"{draw}/weight_{epoch}.pt"):
             os.remove(f"{draw}/weight_{epoch}.pt")
+        _ = None  # for 這個 if 內攜帶 validation loss.
         if val_dataloader is not None:
             with torch.no_grad():
                 val_total_loss = 0.0
@@ -195,7 +196,7 @@ def train(dataloader, net, lr, epochs, weight=None,
         eval_loss['train'].append(train_loss)
         current_lr = optimizer.state_dict()['param_groups'][0]['lr']
         print(f'\repoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
-        logging.info(f'epoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}')
+        logging.info(f'epoch: {epoch + 1}, loss: {train_loss}, lr: {current_lr}\n\tval loss: {_}')
         lr_log.append(current_lr)
         # draw loss figure
         loss_train_and_val = [eval_loss['train'], [_.item() for _ in eval_loss['val']]]
