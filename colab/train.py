@@ -33,7 +33,7 @@ def train(net, dataloader, epoches, lr):
         train_scheduler = optim.lr_scheduler. \
             CosineAnnealingWarmRestarts(optimizer,
                                         T_0=the_first_restart,
-                                        T_mult=T_mult, verbose=True)
+                                        T_mult=T_mult, verbose=False)
 
     loss_recoder = []
     lr_recoder = []
