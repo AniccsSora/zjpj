@@ -1,5 +1,9 @@
 import numpy as np
 import cv2
+import glob
+from pathlib import Path
+import os
+
 
 def pad_2_square(img: np.ndarray, export_size: int):
     """
@@ -42,10 +46,70 @@ def pad_2_square(img: np.ndarray, export_size: int):
     return cv2.resize(res, (export_size, export_size))
 
 
+def get_qrcode(img_root="./../data_clean/the_real593", lablel_root="./../data_clean/the_real593_label"):
+    """
+
+    @param img_root: 圖片資料夾根目錄
+    @param lablel_root: 標記資料夾根目錄
+    @return: 圈出資料集中每一個qrcode。
+    """
+
+    image_paths = glob.glob(img_root+"/*.png")
+    lablel_paths = glob.glob(lablel_root+"/*.txt")
+
+    image_paths.sort(key=lambda fnInt: int(Path(fnInt).stem))
+    lablel_paths.sort(key=lambda fnInt: int(Path(fnInt).stem))
+
+    def read_txt(fpth):
+        # 讀取單個 yolo label file
+        res = []
+
+        with open(fpth) as f:
+            lines = f.readlines()
+            lines = [_.rstrip() for _ in lines]
+
+            for bbox in lines:
+                c, x, y, w, h = [_ for _ in bbox.split(' ')]
+                res.append((int(c), float(x), float(y), float(w), float(h)))
+        return res
+
+    def yolobbox2bbox(x, y, w, h):
+        x1, y1 = x - w / 2, y - h / 2
+        x2, y2 = x + w / 2, y + h / 2
+        return x1, y1, x2, y2
+
+    for img, yolo_txt in zip(image_paths, lablel_paths):
+        fn = Path(img).stem
+        img = cv2.imread(img)
+        w, h = img.shape[1::-1]
+        #print(img, yolo_txt)
+
+        qr_yoloLables = read_txt(yolo_txt)
+
+        for idx, yoloL in enumerate(qr_yoloLables):
+            if int(yoloL[0]) != 0:
+                continue
+            x1, y1, x2, y2 = yolobbox2bbox(yoloL[1],yoloL[2],yoloL[3],yoloL[4])
+            x1 = int(x1 * w)
+            y1 = int(y1 * h)
+            x2 = int(x2 * w)
+            y2 = int(y2 * h)
+            assert os.path.exists("./data/qrCodes")
+            try:
+                cv2.imwrite(f"./data/qrCodes/{fn}_{idx}.png", img[y1:y2, x1:x2])
+            except Exception as e:
+                with open("./data/genErrorLog.txt", mode='a', encoding='utf-8') as errF:
+                    errF.write(f"Error file:{fn} \t")
+                    errF.write(str(e))
+
+
+
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     import cv2
+
+    get_qrcode()
 
     a = cv2.imread("./66.jpg")
     a = cv2.cvtColor(a, cv2.COLOR_BGR2RGB)

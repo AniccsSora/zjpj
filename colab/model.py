@@ -52,7 +52,6 @@ class Autoencoder(nn.Module):
 
 if __name__ == "__main__":
 
-
     fake_batch = torch.randn(2, 1, 128, 128).cuda()
     AE = Autoencoder().cuda()
     output = AE(fake_batch)
