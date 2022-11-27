@@ -1,0 +1,6 @@
+# QRCodePerspective\qrcode_perspective.py
+# 把被BBox 框出的小圖 用訪射變換轉正。
+
+# make_good_bad_qrcode_separately\make_good_bad.py
+# 把 圖片的四個角隨機破壞，並存檔，阿因為是指破壞四個角
+# 所以吃的圖片要是校正的圖。
