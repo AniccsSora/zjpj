@@ -342,7 +342,7 @@ def bbox_not_negative(bbox):
     return True
 
 def command_gen(aug_number, **args):
-    command = "python train.py"
+    command = "python unet_train.py"
     for key, val in args.items():
         if key == 'name':
             val = val + str(aug_number) + '_e{}'.format(args['epochs'])
@@ -534,8 +534,8 @@ if __name__ == "__main__":
     #             data="train_my_qr.yaml",
     #             cfg="yolov5s.yaml",
     #             batch_size=96))
-    # python train.py --epochs 300 --name aug100_e300 --data train_my_qr.yaml --cfg yolov5s.yaml --batch-size 96
+    # python unet_train.py --epochs 300 --name aug100_e300 --data train_my_qr.yaml --cfg yolov5s.yaml --batch-size 96
 
-    # python train.py --epochs 600 --name aug1000_e600 --data train_my_qr.yaml --cfg yolov5s.yaml --batch-size 96
+    # python unet_train.py --epochs 600 --name aug1000_e600 --data train_my_qr.yaml --cfg yolov5s.yaml --batch-size 96
 
 

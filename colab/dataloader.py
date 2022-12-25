@@ -16,17 +16,18 @@ class QR_good_bad_dataset(Dataset):
     """
     bad_qr and good_qr
     """
-    def __init__(self, data_path, image_size):
+    def __init__(self, data_path, image_size, image_channels=3):
         self.data_path = Path(data_path)
         self.image_size = image_size
         self.samples = self.init()
+        self.image_channels = image_channels  # 3 or 1
 
     def init(self):
         """
         scan good and bad folder below data_path。。。
         """
-        good = [_ for _ in self.data_path.glob("good/*.*")]
-        bad = [_ for _ in self.data_path.glob("bad/*.*")]
+        good = [_ for _ in self.data_path.glob("good/*.png")]
+        bad = [_ for _ in self.data_path.glob("bad/*.png")]
         assert len(good) == len(bad)  # good bad 資料夾下資料有不同數量的資料。
         res = []
         for i in range(len(good)):
@@ -41,9 +42,11 @@ class QR_good_bad_dataset(Dataset):
 
         # read file
         g_img = cv2.imread(good_path.__str__(), cv2.IMREAD_GRAYSCALE)
-        #g_img = cv2.cvtColor(g_img, cv2.COLOR_BGR2RGB)
+        if self.image_channels != 1:
+            g_img = cv2.cvtColor(g_img, cv2.COLOR_BGR2RGB)
         b_img = cv2.imread(bad_path.__str__(), cv2.IMREAD_GRAYSCALE)
-        #b_img = cv2.cvtColor(b_img, cv2.COLOR_BGR2RGB)
+        if self.image_channels != 1:
+            b_img = cv2.cvtColor(b_img, cv2.COLOR_BGR2RGB)
 
         # make square
         g_img = mutil.pad_2_square(g_img, self.image_size)
@@ -54,10 +57,10 @@ class QR_good_bad_dataset(Dataset):
 
         g_img = torch.tensor(g_img)
         # 1 是 channel
-        g_img = torch.reshape(g_img, shape=(self.image_size, self.image_size, 1))
+        g_img = torch.reshape(g_img, shape=(self.image_size, self.image_size, self.image_channels))
         g_img = torch.permute(g_img, (2, 0, 1))
         b_img = torch.tensor(b_img)
-        b_img = torch.reshape(b_img, shape=(self.image_size, self.image_size, 1))
+        b_img = torch.reshape(b_img, shape=(self.image_size, self.image_size, self.image_channels))
         b_img = torch.permute(b_img, (2, 0, 1))
 
         return torch.clone(g_img), torch.clone(b_img)

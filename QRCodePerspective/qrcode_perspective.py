@@ -101,4 +101,4 @@ def perspective_qrcodes(src_path_root, dst_path_root):
 if __name__ == "__main__":
 
     perspective_qrcodes("./../colab/data/qrCodes",  # 圖片來源 root
-                        r"D:\Git\zjpj\colab\data\perspective_qrCodes")  # 存檔目的
+                        r"E:\Git\zjpj\colab\data\perspective_qrCodes")  # 存檔目的
