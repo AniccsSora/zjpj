@@ -139,36 +139,74 @@ def train(net, dataloader, val_dataloader, epoches, lr, save_root, SAVE_ROUND=10
 def make_test_view(net, dataloader, r, c, sub_size):
     from util import pad_2_square
     assert dataloader.batch_size == r * c
-    net.eval()
-    net.cuda()
-    out = None
-    for batch_idx, data_good_bad in enumerate(dataloader):
-        good, bad = data_good_bad
-        good = good.cuda().float()/255.0
-        out = net(good)
-        out = out.detach().cpu().numpy().squeeze()
-        break
-    r_tmp = []
-    # make bad
-    for j in range(r):
-        c_tmp = []
-        for i in range(c):
-            idx = (j * c) + i
-            c_tmp.append(pad_2_square(out[idx], sub_size))
-        r_tmp.append(np.hstack(c_tmp))
-    res_bad = np.vstack(r_tmp)
 
-    # make good
-    good = good.detach().cpu().numpy().squeeze()
-    r_tmp = []
-    for j in range(r):
-        c_tmp = []
-        for i in range(c):
-            idx = (j * c) + i
-            c_tmp.append(pad_2_square(good[idx], sub_size))
-        r_tmp.append(np.hstack(c_tmp))
-    res_good = np.vstack(r_tmp)
-    return np.hstack((res_good, res_bad))
+    net.cuda()
+    with torch.no_grad():
+        bad = None
+        for batch_idx, data_good_bad in enumerate(dataloader):
+            good, bad = data_good_bad
+            rebuild = net(bad.cuda().float() / 255.0)
+            break
+        r_tmp = []
+        # make bad
+        bad = bad.numpy().squeeze()
+        for j in range(r):
+            c_tmp = []
+            for i in range(c):
+                idx = (j * c) + i
+                c_tmp.append(pad_2_square(bad[idx], sub_size))
+            r_tmp.append(np.hstack(c_tmp))
+        res_bad = np.vstack(r_tmp)
+
+        # make rebuild
+        rebuild = rebuild.detach().cpu().numpy().squeeze() * 255.0
+        r_tmp = []
+        for j in range(r):
+            c_tmp = []
+            for i in range(c):
+                idx = (j * c) + i
+                c_tmp.append(pad_2_square(rebuild[idx], sub_size))
+            r_tmp.append(np.hstack(c_tmp))
+        res_rebuild = np.vstack(r_tmp)
+    return np.hstack((res_bad, res_rebuild))
+# def make_test_view(net, dataloader, r, c, sub_size, normalization=True):
+#     from util import pad_2_square
+#     assert dataloader.batch_size == r * c
+#     net.eval()
+#     net.cuda()
+#     out = []
+#     for batch_idx, data_good_bad in enumerate(dataloader):
+#         good, bad = data_good_bad
+#         origin_bad = np.array(bad.squeeze())
+#         #good = good.cuda().float()/255.0
+#         if normalization:
+#             bad = bad.cuda().float() / 255.0
+#         else:
+#             bad = bad.cuda().float()
+#         out = net(bad)
+#         out = out.detach().cpu().numpy().squeeze()*255.0
+#         break  # !!
+#     r_tmp = []
+#     # make bad
+#     for j in range(r):
+#         c_tmp = []
+#         for i in range(c):
+#             idx = (j * c) + i
+#             c_tmp.append(pad_2_square(out[idx], sub_size))
+#         r_tmp.append(np.hstack(c_tmp))
+#     res_right = np.vstack(r_tmp)
+#
+#     # make  bad left
+#     bad = np.array(origin_bad)
+#     r_tmp = []
+#     for j in range(r):
+#         c_tmp = []
+#         for i in range(c):
+#             idx = (j * c) + i
+#             c_tmp.append(pad_2_square(bad[idx], sub_size))
+#         r_tmp.append(np.hstack(c_tmp))
+#     res_left = np.vstack(r_tmp)
+#     return np.hstack((res_left, res_right))
 
 
 if __name__ == "__main__":
@@ -194,7 +232,7 @@ if __name__ == "__main__":
     net = train(net, my_dataloader, my_val_dataset, save_root='1225_today', epoches=1, lr=1e-5, SAVE_ROUND=2)
 
     res = make_test_view(net, test_dataloader, r, c, sub_size=128)
-    plt.imshow(res);plt.show();
+    plt.imshow(res, cmap='gray');plt.show();
 
 
     # bad image
