@@ -10,7 +10,7 @@ import glob
 from pathlib import Path
 from typing import List, Tuple
 from tqdm import tqdm
-from misc.F import ensure_folder
+from F import ensure_folder
 import cv2
 from torch.utils.data import random_split
 
@@ -33,7 +33,7 @@ class AugImgMultiAugDataset(Dataset):
         assert self.root.is_dir()
         print(f"{self.root} exists... OK")
 
-        pbar = tqdm(self.root.glob("*"))
+        pbar = tqdm(self.root.glob("*"), smoothing=0.1, ncols=100)
         # check
         for idx, sub_dir in enumerate(pbar):
             pbar.set_description(f"Processing {idx}: ")
@@ -83,27 +83,37 @@ class AugImgMultiAugDataset(Dataset):
             #y_tmp = torch.permute(y_tmp, (0, 1, 2))
             y.append(y_tmp)
 
-        return x, y
+        return x, y, _xStr
 
 
 if __name__ == "__main__":
     # 創建數據集
 
     augImg_dataset_v2 = AugImgMultiAugDataset(img_root="./haha", each_base_name="0_base.png")
+    pbar = tqdm(augImg_dataset_v2, smoothing=0.1, ncols=100 )
+    idx=0
+    for idx, x_y in enumerate(pbar):
+        idx += 1
+        x, y_list, x_str = x_y
+        pbar.set_description(f"Processing {idx}/{len(augImg_dataset_v2)}: {x_str}")
 
-    x, y = augImg_dataset_v2[777]
+        if idx > 500:
+            break
+
+    x, y, _ = augImg_dataset_v2[5]
     # x image debug
     plt.imshow(torch.permute(x, (1, 2, 0)))
     # plt.show()
     # y image debug, y index base on 強化幾張圖片 0 ~ N-1
     plt.imshow(torch.permute(y[0], (1, 2, 0)))
-    # plt.show()
+    plt.show()
 
     # 分 dataloader
-    dataloader_v2, val_dataloader_v2, test_dataloader_v2 = random_split(augImg_dataset_v2, [0.7, 0.2, 0.1],
+    dataset_v2, val_dataset_v2, test_dataset_v2 = random_split(augImg_dataset_v2, [0.7, 0.2, 0.1],
                                                                   generator=torch.Generator().manual_seed(42))
 
     # 創建 DataLoader
-    #dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+    dataloader_v2 = DataLoader(dataset_v2, batch_size=32, drop_last=True,
+                               pin_memory=True, num_workers=2)
 
     print("End")

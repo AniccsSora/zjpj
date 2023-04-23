@@ -16,6 +16,8 @@ import cv2
 
 class NdArrayDataset_RGB(Dataset):
     """
+    這類別是將單一qrcode強化成很多
+
     file_list: 每一張圖片的路徑。
 
     回傳 np.uint8 型別的 data. (H, W, C=預設 3)
@@ -143,9 +145,11 @@ if __name__ == "__main__":
     #
     pbar = tqdm(my_dataset)
     for idx, img in enumerate(pbar):
-        if idx > 10: # for test purpose
-            print("go break...")
-            break
+        # for test purpose
+        # if idx > 10:
+        #     print("go break...")
+        #     break
+
         # process
         pbar.set_description(f"Processing {idx}: ")
 
