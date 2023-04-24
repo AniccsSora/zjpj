@@ -107,23 +107,13 @@ if __name__ == "__main__":
     detect qrcode on image.
     """
     imgs = [_ for _ in Path("./data/raw").rglob("*.*")]
-    assert len(imgs) > 0
 
-    for _ in imgs:
-        assert Path(_).is_file()
-
-    # r'D:\Git\yolov5\data\images\504.png'
     for img in imgs:
-        cv_im = cv2.imread(img.__str__())
-        res = __get_xyxy(img)  # get_xyxy: 回傳 list，根據 bbox數量，裡面放置xyxypc資料
-        numbers_of_qrcode = 0
-        for idx, res_single in enumerate(res):
-            numbers_of_qrcode = len(res)
-            x1,y1,x2,y2,p,c = res_single
-            # draw box on cv_im
-            cv2.rectangle(cv_im, (x1, y1), (x2, y2), (0, 255, 0), 3)
-            single_qr = __crop_image(img.__str__(), (x1, y1, x2, y2))
-            cv2.imshow(f'single {idx}', single_qr)
-        print("numbers_of_qrcode:", numbers_of_qrcode)
-        cv2.imshow(f'result: {numbers_of_qrcode}', cv_im)
-        cv2.waitKey(0)
+        res_list = detect_qr_field(img)  # useYolo.detect_qr_field
+        print("detect:", len(res_list))
+        for idx, _ in enumerate(res_list):
+            print("")
+            #cv2.imshow(f"aaa {idx}", _)
+            cv2.imwrite(f"./data/single_qr/{img.stem}_{idx}.png", cv2.cvtColor(_, cv2.COLOR_BGR2RGB))
+        #cv2.waitKey(0)
+
