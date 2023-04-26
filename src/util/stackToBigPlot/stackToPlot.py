@@ -92,9 +92,12 @@ if __name__ == "__main__":
 
     # 緊湊繪製
     big_stack_img = create_image_grid(rows, cols, images_path)
-    big_stack_img.show()
+    #big_stack_img.show()
+    big_stack_img.save("./cvStack.png")
+
 
     # 清晰圖表
     big_stack_img = create_image_grid_by_MATPLT(rows, cols, images_path)
-    plt.show()
+    #plt.show()
+    plt.savefig("./MATPLOT_Stack.png")
 
