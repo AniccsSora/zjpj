@@ -81,8 +81,8 @@ def create_image_grid_by_MATPLT(rows, cols, image_list):
     plt.tight_layout()
     plt.subplots_adjust(hspace=0, wspace=0)
 
-
-if __name__ == "__main__":
+"""
+    # single
     images_dir = Path("../makeGoodAffineQR/data/affine")
     assert images_dir.is_dir()
 
@@ -93,11 +93,31 @@ if __name__ == "__main__":
     # 緊湊繪製
     big_stack_img = create_image_grid(rows, cols, images_path)
     #big_stack_img.show()
-    big_stack_img.save("./cvStack.png")
+    big_stack_img.save("./data/cvStack.png")
 
 
     # 清晰圖表
     big_stack_img = create_image_grid_by_MATPLT(rows, cols, images_path)
     #plt.show()
-    plt.savefig("./MATPLOT_Stack.png")
+    plt.savefig("./data/MATPLOT_Stack.png")
+"""
+if __name__ == "__main__":
 
+    clean_qr = [_ for _ in Path("./data/single_qr").rglob("*.*")][0:16]
+    smear_qr = [_ for _ in Path("./data/smearing").rglob("*.*")][0:16]
+    # for other module
+    rebuilds = [_ for _ in Path("./data/rebuild").rglob("*.*")][0:16]
+    assert len(rebuilds) > 0
+    rows, cols = 4, 4
+
+    big_stack_img = create_image_grid_by_MATPLT(rows, cols, clean_qr)
+    #plt.imshow(big_stack_img)
+    plt.savefig("./clean_stack.png")
+
+    big_stack_img = create_image_grid_by_MATPLT(rows, cols, smear_qr)
+    #plt.imshow(big_stack_img)
+    plt.savefig("./smear_stack.png")
+
+    big_stack_img = create_image_grid_by_MATPLT(rows, cols, rebuilds)
+    # plt.imshow(big_stack_img)
+    plt.savefig("./rebuild_stack.png")

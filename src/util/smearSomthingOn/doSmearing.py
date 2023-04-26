@@ -1,3 +1,4 @@
+import os.path
 import random
 from PIL import Image, ImageDraw
 import random
@@ -15,7 +16,8 @@ from scipy.special import binom
 import numpy as np
 from numpy.polynomial import polynomial
 from scipy.special import comb
-
+from util.qrCodeValidator import qrValidator
+from pathlib import Path
 import random
 import numpy as np
 from scipy.special import comb
@@ -35,7 +37,11 @@ def draw_bezier_curve(image, points, num_segments=50)->Image.Image:
 
     if isinstance(image, str):
         # 如果輸入是檔案路徑，則載入圖像
+        assert os.path.exists(image)  # 請確認路徑存在
         image = Image.open(image)
+    elif isinstance(image, Path):
+        assert image.is_file()  # 請確認路徑存在
+        image = Image.open(str(image))
     elif isinstance(image, Image.Image):
         # 如果輸入是 PIL Image 物件，則直接使用
         if image.mode == 'L':
@@ -48,7 +54,8 @@ def draw_bezier_curve(image, points, num_segments=50)->Image.Image:
         image = Image.fromarray(image)
     else:
         # 如果輸入類型不正確，則拋出異常
-        raise TypeError('Unsupported image type')
+        raise TypeError('Unsupported image type:', type(image))
+    assert isinstance(image, Image.Image)
     image = image.copy()
     draw = ImageDraw.Draw(image)
 
@@ -56,7 +63,6 @@ def draw_bezier_curve(image, points, num_segments=50)->Image.Image:
     for i in range(len(points)):
         color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         curve, _ = generate_bezier_curve(points[i], num_segments=num_segments, color=color)
-        # random line width
         width = random.randint(int(min(image.size) * 0.02), int(max(image.size) * 0.05))
         draw.line(list(map(tuple, curve)), fill=color, width=width)
 
@@ -94,6 +100,27 @@ def generate_random_points_near_edges(image, n):
     :param offset: 随机点距离图像边缘和角落的最小距离
     :return: 随机点的 numpy 数组
     """
+    if isinstance(image, str):
+        # 如果輸入是檔案路徑，則載入圖像
+        assert os.path.exists(image)  # 請確認路徑存在
+        image = Image.open(image)
+    elif isinstance(image, Path):
+        assert image.is_file()  # 請確認路徑存在
+        image = Image.open(image)
+    elif isinstance(image, Image.Image):
+        # 如果輸入是 PIL Image 物件，則直接使用
+        if image.mode == 'L':
+            image = image.convert('RGB')
+        pass
+    elif isinstance(image, np.ndarray):
+        # 如果輸入是 numpy 數組，轉 PIL Image 物件
+        if image.ndim == 2:
+            image = np.stack((image,) * 3, axis=-1)
+        image = Image.fromarray(image)
+    else:
+        # 如果輸入類型不正確，則拋出異常
+        raise TypeError('Unsupported image type:', type(image))
+
     # 获取图像宽度和高度
     w, h = image.size
 
@@ -136,35 +163,41 @@ def gen_curves_points_list(ref_image, n, complixty=(3,11)):
         __aaa = generate_random_points_near_edges(ref_image, random.randint(complixty[0], complixty[1]))
         res.append(__aaa)
     return res
+"""
+# single multiplt step
+ # 加载示例图像
+#image = Image.open('./data/0_0.png')
+#image = './data/single_qr/0_0.png'
+#image = cv2.imread('./data/single_qr/0_0.png', 0)
+#image = Image.fromarray(image)
 
+# Generate some random control points for two curves
+#points1 = np.array([(50, 50), (100, 150), (150, 50), (200, 100)])
+#points2 = np.array([(50, 150), (100, 50), (150, 150), (200, 50), (22, 22)])
+
+# 在圖片範圍內生成幾個點
+# points1 = generate_random_points_near_edges(image, 7)
+# points2 = generate_random_points_near_edges(image, 9)
+# points3 = generate_random_points_near_edges(image, 11)
+#
+# have_cur = draw_bezier_curve(image, [points1, points2, points3])
+"""
 if __name__ == "__main__":
-    # 加载示例图像
-    image = Image.open('./data/0_0.png')
-    #image = './data/single_qr/0_0.png'
-    #image = cv2.imread('./data/single_qr/0_0.png', 0)
-    #image = Image.fromarray(image)
+    images_root = Path("./data/single_qr")
+    images = [_ for _ in images_root.rglob("*.*")]
 
-    # Generate some random control points for two curves
-    #points1 = np.array([(50, 50), (100, 150), (150, 50), (200, 100)])
-    #points2 = np.array([(50, 150), (100, 50), (150, 150), (200, 50), (22, 22)])
+    for image in images:
+        points = gen_curves_points_list(
+            ref_image=image,
+            n=4,
+            complixty=(3, 21)
+        )
+        image_np = np.asarray(Image.open(image))
+        have_cur = draw_bezier_curve(image_np, points)
 
-    # 在圖片範圍內生成幾個點
-    # points1 = generate_random_points_near_edges(image, 7)
-    # points2 = generate_random_points_near_edges(image, 9)
-    # points3 = generate_random_points_near_edges(image, 11)
-    #
-    # have_cur = draw_bezier_curve(image, [points1, points2, points3])
+        if qrValidator.is_qrcode(have_cur):
+            # go re-gen
+            continue
 
-    #
-    points = gen_curves_points_list(
-        ref_image=image,
-        n=3,
-        complixty=(3, 19)
-    )
-
-    have_cur = draw_bezier_curve(image, points)
-
-    have_cur.save("./output.png")
-
-
+        have_cur.save(f"./data/smearing/{image.stem}.png")
 

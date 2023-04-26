@@ -4,12 +4,19 @@ from util.qrCodeValidator import qrValidator
 from PIL import Image, ImageFilter
 import numpy as np
 import cv2
+from pathlib import Path
+from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def reality_rebuild(good, bad)->Image.Image:
+def reality_rebuild(good:Image.Image, bad:Image.Image, power=None)->Image.Image:
     # do diff
-    diff = np.asarray(smearing) - aff
+    diff=None
+    if power is None:
+        diff = np.asarray(bad) - good
+    else:
+        diff = np.asarray(bad) - np.asarray(good) * (power/100)
+        diff = diff.astype(np.uint8)
     # do trans
     diff_rgba = Image.fromarray(diff).convert('RGBA')
     #
@@ -42,12 +49,12 @@ def reality_rebuild(good, bad)->Image.Image:
     #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # copy to processing
-    rebuild = aff.copy()  # 最後結果
+    rebuild = good.copy()  # 最後結果
     rebuild_data = rebuild.load()  # 取數值用
     fking_little_bit_diff_rgba = _.load()  # 加料用 取數值用
     # Add the images together, pixel by pixel
-    for y in range(aff.size[1]):
-        for x in range(aff.size[0]):
+    for y in range(good.size[1]):
+        for x in range(good.size[0]):
             r1, g1, b1 = rebuild_data[x, y]
             r2, g2, b2, a2 = fking_little_bit_diff_rgba[x, y]
             if a2 > 0:
@@ -80,7 +87,7 @@ if __name__ == "__main__":
             # good smearing
             break
     # 重建
-    rebuild = reality_rebuild(good, smearing)
+    rebuild = reality_rebuild(aff, smearing)
     #
     # 設置子圖
     fig, axes = plt.subplots(2, 2, figsize=(10, 10))
@@ -89,7 +96,8 @@ if __name__ == "__main__":
     axes[0, 0].imshow(good)
     axes[0, 1].imshow(aff)
     axes[1, 0].imshow(smearing)
-    axes[1, 1].imshow(rebuild)
+    blur_rebuild = rebuild.filter(ImageFilter.GaussianBlur)
+    axes[1, 1].imshow(blur_rebuild)
 
     # 設置子圖標題
     axes[0, 0].set_title('good')
