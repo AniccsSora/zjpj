@@ -49,7 +49,7 @@ def draw_bezier_curve(image, points, num_segments=50)->Image.Image:
     else:
         # 如果輸入類型不正確，則拋出異常
         raise TypeError('Unsupported image type')
-
+    image = image.copy()
     draw = ImageDraw.Draw(image)
 
     # 绘制贝塞尔曲线
