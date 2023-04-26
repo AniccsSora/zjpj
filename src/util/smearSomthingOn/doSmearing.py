@@ -123,25 +123,46 @@ def generate_random_points_near_edges(image, n):
 
     return matrix_permuted[:n]
 
+def gen_curves_points_list(ref_image, n, complixty=(3,11)):
+    """
+
+    @param ref_image: 參考圖片
+    @param n: 生成的組數
+    @param complixty: 線條複雜度範圍
+    @return:
+    """
+    res = []
+    for _ in range(n):
+        __aaa = generate_random_points_near_edges(ref_image, random.randint(complixty[0], complixty[1]))
+        res.append(__aaa)
+    return res
+
 if __name__ == "__main__":
     # 加载示例图像
-    image = Image.open('./data/single_qr/0_0.png')
+    image = Image.open('./data/0_0.png')
     #image = './data/single_qr/0_0.png'
     #image = cv2.imread('./data/single_qr/0_0.png', 0)
     #image = Image.fromarray(image)
-
-    w, h = image.size
 
     # Generate some random control points for two curves
     #points1 = np.array([(50, 50), (100, 150), (150, 50), (200, 100)])
     #points2 = np.array([(50, 150), (100, 50), (150, 150), (200, 50), (22, 22)])
 
     # 在圖片範圍內生成幾個點
-    points1 = generate_random_points_near_edges(image, 7)
-    points2 = generate_random_points_near_edges(image, 9)
-    points3 = generate_random_points_near_edges(image, 11)
+    # points1 = generate_random_points_near_edges(image, 7)
+    # points2 = generate_random_points_near_edges(image, 9)
+    # points3 = generate_random_points_near_edges(image, 11)
+    #
+    # have_cur = draw_bezier_curve(image, [points1, points2, points3])
 
-    have_cur = draw_bezier_curve(image, [points1, points2, points3])
+    #
+    points = gen_curves_points_list(
+        ref_image=image,
+        n=3,
+        complixty=(3, 19)
+    )
+
+    have_cur = draw_bezier_curve(image, points)
 
     have_cur.save("./output.png")
 
